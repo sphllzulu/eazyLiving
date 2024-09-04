@@ -116,15 +116,103 @@
 
 
 // bookingSlice.js
-import { createSlice } from '@reduxjs/toolkit';
-import { doc, setDoc, writeBatch } from 'firebase/firestore';
-import { db } from './firebase'; 
+// import { createSlice } from '@reduxjs/toolkit';
+// import { doc, setDoc, writeBatch } from 'firebase/firestore';
+// import { db } from './firebase'; 
 
-export const bookingSlice = createSlice({
+// export const bookingSlice = createSlice({
+//   name: 'booking',
+//   initialState: {
+//     favorites: [],
+//     bookings: [],
+//   },
+//   reducers: {
+//     addBooking: (state, action) => {
+//       state.bookings.push(action.payload);
+//     },
+//     addFavorite: (state, action) => {
+//       state.favorites.push(action.payload);
+//     },
+//     setInitialData: (state, action) => {
+//       state.bookings = action.payload.bookings;
+//       state.favorites = action.payload.favorites;
+//     },
+//   },
+// });
+
+// export const saveBookingToFirestore = (booking) => async (dispatch) => {
+//   try {
+//     // Assume 'bookings' is the collection name in Firestore
+//     await db.collection('bookings').add(booking);
+//     dispatch(bookingSlice.actions.addBooking(booking));
+//   } catch (error) {
+//     console.error('Error saving booking to Firestore:', error);
+//   }
+// };
+
+// export const { addBooking, addFavorite, setInitialData } = bookingSlice.actions;
+
+// export const saveBulkDataToFirestore = (data) => async (dispatch) => {
+//   try {
+//     const batch = writeBatch(db);
+
+//     data.bookings.forEach((booking) => {
+//       const docRef = doc(db, 'bookings', booking.id.toString());
+//       batch.set(docRef, booking);
+//     });
+
+//     data.favorites.forEach((favorite) => {
+//       const docRef = doc(db, 'favorites', favorite.id.toString());
+//       batch.set(docRef, favorite);
+//     });
+
+//     await batch.commit();
+//     dispatch(setInitialData(data));
+//   } catch (error) {
+//     console.error("Error adding bulk data: ", error);
+//   }
+// };
+
+
+
+// export default bookingSlice.reducer;
+
+
+
+// import { createSlice } from '@reduxjs/toolkit';
+// import { db } from './firebase';
+// import { writeBatch, doc } from 'firebase/firestore';
+
+// const bookingSlice = createSlice({
+//   name: 'booking',
+//   initialState: {
+//     bookings: [],
+//     favorites: [],
+//   },
+//   reducers: {
+//     saveBulkDataToFirestore: (state, action) => {
+//       // Here you would handle saving the data to Firestore
+//     },
+//     addFavorite: (state, action) => {
+//       state.favorites.push(action.payload);
+//     },
+//   },
+// });
+
+// export const { saveBulkDataToFirestore, addFavorite } = bookingSlice.actions;
+
+// export default bookingSlice.reducer;
+
+
+
+
+import { createSlice } from '@reduxjs/toolkit';
+
+const bookingSlice = createSlice({
   name: 'booking',
   initialState: {
-    favorites: [],
     bookings: [],
+    favorites: [],
   },
   reducers: {
     addBooking: (state, action) => {
@@ -133,46 +221,15 @@ export const bookingSlice = createSlice({
     addFavorite: (state, action) => {
       state.favorites.push(action.payload);
     },
-    setInitialData: (state, action) => {
-      state.bookings = action.payload.bookings;
-      state.favorites = action.payload.favorites;
+    setBookings: (state, action) => {
+      state.bookings = action.payload;
+    },
+    setFavorites: (state, action) => {
+      state.favorites = action.payload;
     },
   },
 });
 
-export const saveBookingToFirestore = (booking) => async (dispatch) => {
-  try {
-    // Assume 'bookings' is the collection name in Firestore
-    await db.collection('bookings').add(booking);
-    dispatch(bookingSlice.actions.addBooking(booking));
-  } catch (error) {
-    console.error('Error saving booking to Firestore:', error);
-  }
-};
-
-export const { addBooking, addFavorite, setInitialData } = bookingSlice.actions;
-
-export const saveBulkDataToFirestore = (data) => async (dispatch) => {
-  try {
-    const batch = writeBatch(db);
-
-    data.bookings.forEach((booking) => {
-      const docRef = doc(db, 'bookings', booking.id.toString());
-      batch.set(docRef, booking);
-    });
-
-    data.favorites.forEach((favorite) => {
-      const docRef = doc(db, 'favorites', favorite.id.toString());
-      batch.set(docRef, favorite);
-    });
-
-    await batch.commit();
-    dispatch(setInitialData(data));
-  } catch (error) {
-    console.error("Error adding bulk data: ", error);
-  }
-};
-
-
+export const { addBooking, addFavorite, setBookings, setFavorites } = bookingSlice.actions;
 
 export default bookingSlice.reducer;
