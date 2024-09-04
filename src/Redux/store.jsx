@@ -11,17 +11,15 @@
 // export default store;
 
 import { configureStore } from "@reduxjs/toolkit";
-import userReducer from "../userSlice";
-import accommodationReducer from "../AccomodationSlice";
-import bookingReducer from "../BookingSlice";
 import userSlice from "../userSlice";
-import AccomodationSlice from "../AccomodationSlice";
+// import AccomodationSlice from "../AccomodationSlice";
 import BookingSlice from "../BookingSlice";
+import paymentSlice from "../paymentSlice";
 
 const store = configureStore({
     reducer: {
         user: userSlice,
-        accommodations: AccomodationSlice,
+        payment:paymentSlice,
         bookings: BookingSlice,
     }
 });

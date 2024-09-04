@@ -1,23 +1,20 @@
 import React from 'react';
-import Slider from 'react-slick';
-import { Box, Typography, InputBase } from '@mui/material';
+import { Box, Typography, InputBase, Button } from '@mui/material';
 import { styled } from '@mui/system';
-import 'slick-carousel/slick/slick.css';
-import 'slick-carousel/slick/slick-theme.css';
 
-const CarouselContainer = styled(Box)(({ theme }) => ({
+const Container = styled(Box)(({ theme }) => ({
   position: 'relative',
   width: '90%',
-  height: '500px',
-  overflow: 'hidden',
+  height: '400px',
+ 
 }));
 
 const CarouselImage = styled('img')({
-  margin:'10px',
+  marginTop: '20px',
   width: '100%',
-  height: '100%',
-  
-  borderRadius:'10px'
+  height: '400px',
+  borderRadius:'10px',
+  objectFit: 'cover',
 });
 
 const CarouselText = styled(Typography)(({ theme }) => ({
@@ -32,51 +29,40 @@ const CarouselText = styled(Typography)(({ theme }) => ({
   zIndex: 1,
 }));
 
-const SearchInput = styled(InputBase)(({ theme }) => ({
-  position: 'absolute',
-  width:'50%',
-  bottom: '-20px',
-  right: '20px',
+const SearchContainer = styled(Box)({
+  display: 'flex',
+  alignItems: 'center',
+  width: '90%',
+  marginTop: '20px',
+});
+
+const SearchInput = styled(InputBase)({
+  flex: 1,
   padding: '5px 10px',
   backgroundColor: '#fff',
+  border: '2px solid black',
   borderRadius: '4px',
-//   boxShadow: theme.shadows[2],
-  zIndex: 2,
-}));
+});
 
 const carouselItems = [
   {
-    image: './hotela.jpg', // Replace with your image URLs
-    text: 'Slide 1 Text',
-  },{
-    image: './hotela.jpg', // Replace with your image URLs
+    image: './hotela.jpg',
     text: 'Slide 1 Text',
   },
-  {
-    image: './hotela.jpg', // Replace with your image URLs
-    text: 'Slide 1 Text',
-  },
-  
 ];
 
 const Carousel = () => {
-  const settings = {
-    
-  };
+  const item = carouselItems[0]; // Get the first item from the array
 
   return (
-    <div style={{display:'flex',justifyContent:'center'}}>
-    <CarouselContainer >
-      <Slider {...settings}>
-        {carouselItems.map((item, index) => (
-          <div key={index} style={{ position: 'relative' }}>
-            <CarouselImage src={item.image} alt={`Slide ${index+1}`} />
-            <CarouselText>{item.text}</CarouselText>
-          </div>
-        ))}
-      </Slider>
-      <SearchInput placeholder="Search..." />
-    </CarouselContainer>
+    <div style={{ display: 'flex', justifyContent: 'center' }}>
+      <Container>
+        <div style={{ position: 'relative' }}>
+          <CarouselImage src={item.image} alt="Slide 1" />
+          <CarouselText>{item.text}</CarouselText>
+        </div>
+        
+      </Container>
     </div>
   );
 };

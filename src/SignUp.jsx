@@ -1,10 +1,8 @@
-
-
-
 import React, { useState } from "react";
 import { TextField, Button, Container, Typography } from "@mui/material";
 import { useDispatch } from "react-redux";
-import { useNavigate } from "react-router-dom"; // Import useNavigate
+import './SignUp.css';
+import { useNavigate } from "react-router-dom"; 
 import { registerUser, updateUserProfile } from "./userSlice";
 
 const SignUp = () => {
@@ -13,7 +11,7 @@ const SignUp = () => {
   const [displayName, setDisplayName] = useState("");
   const [error, setError] = useState(null);
   const dispatch = useDispatch();
-  const navigate = useNavigate(); // Initialize useNavigate
+  const navigate = useNavigate(); 
 
   const handleSignUp = async () => {
     try {
@@ -34,7 +32,8 @@ const SignUp = () => {
   };
 
   return (
-    <Container maxWidth="sm">
+    <div className="flex">
+    <Container maxWidth="sm" className="container">
       <Typography variant="h4" gutterBottom>
         Sign Up
       </Typography>
@@ -50,6 +49,7 @@ const SignUp = () => {
         margin="normal"
         value={displayName}
         onChange={(e) => setDisplayName(e.target.value)}
+        
       />
       <TextField
         label="Email"
@@ -72,6 +72,7 @@ const SignUp = () => {
         Sign Up
       </Button>
     </Container>
+    </div>
   );
 };
 
