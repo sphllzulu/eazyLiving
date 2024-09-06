@@ -15,12 +15,14 @@ import userSlice from "../userSlice";
 // import AccomodationSlice from "../AccomodationSlice";
 import BookingSlice from "../BookingSlice";
 import paymentSlice from "../paymentSlice";
+import profileSlice from "../profileSlice";
 
 const store = configureStore({
     reducer: {
         user: userSlice,
         payment:paymentSlice,
         bookings: BookingSlice,
+        profile:profileSlice,
     }
 });
 

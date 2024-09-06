@@ -104,7 +104,7 @@ export default function ButtonAppBar() {
               <ListItemText primary="Sign in" />
             </ListItem>
             </Link>
-            <Link>
+            <Link to='/profile'>
             <ListItem button>
               <ListItemText primary="Profile" />
             </ListItem>

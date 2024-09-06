@@ -13,7 +13,7 @@ const CarouselImage = styled('img')({
   marginTop: '20px',
   width: '100%',
   height: '400px',
-  borderRadius:'10px',
+  borderRadius:'10px 10px 0 0',
   objectFit: 'cover',
 });
 

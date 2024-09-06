@@ -289,9 +289,9 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import ShareIcon from '@mui/icons-material/Share';
 import CloseIcon from '@mui/icons-material/Close';
 import { useDispatch, useSelector } from 'react-redux';
-import { doc, setDoc } from "firebase/firestore";
+import { doc, setDoc,getDoc } from "firebase/firestore";
 import { db, auth } from "./firebase";
-import { addBooking, addFavorite, setBookings, setFavorites } from './BookingSlice';
+import { addBooking, addFavorite, setBookings, setFavorites, setCurrentBookingId} from './BookingSlice';
 import { setCheckInDate, setCheckOutDate, setGuests, setAmount } from './paymentSlice';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
@@ -299,6 +299,11 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { useStripe, useElements, CardElement } from '@stripe/react-stripe-js';
 
 const roomsData = [
+  { id: 1, type: 'standard', price: 1000, image: 'standard.jpg', rating: 4.5, amenities: ['Free WiFi', 'TV'], policies: ['No Smoking', 'No Pets'], description: 'A cozy standard room.' },
+  { id: 2, type: 'suite', price: 2000, image: 'suite.jpg', rating: 4.8, amenities: ['Free WiFi', 'TV', 'Mini Bar'], policies: ['No Smoking', 'No Pets'], description: 'A luxurious suite with extra space.' },
+  { id: 3, type: 'double', price: 1500, image: 'double.jpg', rating: 4.6, amenities: ['Free WiFi', 'TV', 'Air Conditioning', 'Tea/Coffee Maker'], policies: ['No Smoking', 'No Pets', 'Check-in after 3 PM', 'Check-out before 11 AM'], description: 'A spacious double room with comfortable beds and modern amenities for a relaxing stay.' },
+  { id: 4, type: 'queen', price: 1800, image: 'queen.jpg', rating: 4.7, amenities: ['Free WiFi', 'TV', 'Mini Bar', 'Work Desk'], policies: ['No Smoking', 'No Pets', 'Check-in after 3 PM', 'Check-out before 11 AM'], description: 'A stylish queen room with elegant decor, a mini bar, and a dedicated workspace.' },
+  { id: 5, type: 'king', price: 2500, image: 'king.jpg', rating: 4.9, amenities: ['Free WiFi', 'TV', 'Private Balcony', 'Jacuzzi', 'Mini Bar'], policies: ['No Smoking', 'No Pets', 'Check-in after 2 PM', 'Check-out before 12 PM'], description: 'An opulent king room with a private balcony, a Jacuzzi, and premium amenities for the ultimate experience.' },
   { id: 1, type: 'standard', price: 1000, image: 'standard.jpg', rating: 4.5, amenities: ['Free WiFi', 'TV'], policies: ['No Smoking', 'No Pets'], description: 'A cozy standard room.' },
   { id: 2, type: 'suite', price: 2000, image: 'suite.jpg', rating: 4.8, amenities: ['Free WiFi', 'TV', 'Mini Bar'], policies: ['No Smoking', 'No Pets'], description: 'A luxurious suite with extra space.' },
   { id: 3, type: 'double', price: 1500, image: 'double.jpg', rating: 4.6, amenities: ['Free WiFi', 'TV', 'Air Conditioning', 'Tea/Coffee Maker'], policies: ['No Smoking', 'No Pets', 'Check-in after 3 PM', 'Check-out before 11 AM'], description: 'A spacious double room with comfortable beds and modern amenities for a relaxing stay.' },
@@ -319,6 +324,8 @@ const BookingComponent = () => {
   const user = useSelector((state) => state.user.user);
   const stripe = useStripe();
   const elements = useElements();
+  const [openConfirmation, setOpenConfirmation] = useState(false); // Add state for confirmation dialog
+  const [confirmationDetails, setConfirmationDetails] = useState(null);
 
   useEffect(() => {
     dispatch(setBookings(roomsData));
@@ -375,6 +382,58 @@ const BookingComponent = () => {
     }
   };
 
+  //   const handleBooking = async () => {
+  //   if (!user) {
+  //     alert('You need to be logged in to book a room.');
+  //     return;
+  //   }
+
+  //   dispatch(setAmount(selectedRoom.price));
+  //   dispatch(setCheckInDate(checkInDate ? checkInDate.toISOString() : null));
+  //   dispatch(setCheckOutDate(checkOutDate ? checkOutDate.toISOString() : null));
+  //   dispatch(setGuests(guests));
+
+  //   const { error, paymentMethod } = await stripe.createPaymentMethod({
+  //     type: 'card',
+  //     card: elements.getElement(CardElement),
+  //   });
+
+  //   if (error) {
+  //     console.error('Error creating payment method:', error);
+  //     alert('Payment failed');
+  //     return;
+  //   }
+
+  //   try {
+  //     await setDoc(doc(db, 'bookings', `${selectedRoom.id}-${user.uid}`), {
+  //       ...selectedRoom,
+  //       userId: user.uid,
+  //       checkInDate: checkInDate ? checkInDate.toISOString() : null,
+  //       checkOutDate: checkOutDate ? checkOutDate.toISOString() : null,
+  //       guests,
+  //       amount: selectedRoom.price,
+  //       bookedAt: new Date(),
+  //       paymentMethodId: paymentMethod.id,
+  //       guestInfo
+  //     });
+  //     dispatch(addBooking({
+  //       ...selectedRoom,
+  //       userId: user.uid,
+  //       checkInDate: checkInDate ? checkInDate.toISOString() : null,
+  //       checkOutDate: checkOutDate ? checkOutDate.toISOString() : null,
+  //       guests,
+  //       amount: selectedRoom.price,
+  //       guestInfo
+  //     }));
+  //     alert('Room booked successfully');
+  //     handleClose();
+  //   } catch (error) {
+  //     console.error('Error booking room:', error);
+  //     alert('Booking failed');
+  //   }
+  // };
+
+
   const handleBooking = async () => {
     if (!user) {
       alert('You need to be logged in to book a room.');
@@ -398,7 +457,8 @@ const BookingComponent = () => {
     }
 
     try {
-      await setDoc(doc(db, 'bookings', `${selectedRoom.id}-${user.uid}`), {
+      const docRef = doc(db, 'bookings', `${selectedRoom.id}-${user.uid}`);
+      await setDoc(docRef, {
         ...selectedRoom,
         userId: user.uid,
         checkInDate: checkInDate ? checkInDate.toISOString() : null,
@@ -409,6 +469,7 @@ const BookingComponent = () => {
         paymentMethodId: paymentMethod.id,
         guestInfo
       });
+
       dispatch(addBooking({
         ...selectedRoom,
         userId: user.uid,
@@ -418,7 +479,14 @@ const BookingComponent = () => {
         amount: selectedRoom.price,
         guestInfo
       }));
-      alert('Room booked successfully');
+
+      dispatch(setCurrentBookingId(docRef.id));
+
+      // Fetch booking details from Firestore
+      const bookingSnapshot = await getDoc(docRef);
+      setConfirmationDetails(bookingSnapshot.data());
+
+      setOpenConfirmation(true); // Open confirmation dialog
       handleClose();
     } catch (error) {
       console.error('Error booking room:', error);
@@ -426,8 +494,14 @@ const BookingComponent = () => {
     }
   };
 
+
+
   const handleGuestInfoChange = (e) => {
     setGuestInfo({ ...guestInfo, [e.target.name]: e.target.value });
+  };
+
+  const handleConfirmationClose = () => {
+    setOpenConfirmation(false);
   };
 
   return (
@@ -584,8 +658,42 @@ const BookingComponent = () => {
           </Container>
         </DialogContent>
       </Dialog>
+
+{/* Confirmation Dialog */}
+<Dialog open={openConfirmation} onClose={handleConfirmationClose}>
+        <DialogTitle>
+          Booking Confirmation
+          <IconButton
+            edge="end"
+            color="inherit"
+            onClick={handleConfirmationClose}
+            aria-label="close"
+            sx={{ position: 'absolute', top: 8, right: 8 }}
+          >
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent>
+          <Container>
+            <Typography variant="h6">Booking Details</Typography>
+            <Typography variant="body1">Room Type: {confirmationDetails?.type}</Typography>
+            <Typography variant="body1">Price: R{confirmationDetails?.price} per night</Typography>
+            <Typography variant="body1">Check-in Date: {new Date(confirmationDetails?.checkInDate).toLocaleDateString()}</Typography>
+            <Typography variant="body1">Check-out Date: {new Date(confirmationDetails?.checkOutDate).toLocaleDateString()}</Typography>
+            <Typography variant="body1">Guests: {confirmationDetails?.guests}</Typography>
+            <Typography variant="body1">Name: {confirmationDetails?.guestInfo?.name}</Typography>
+            <Typography variant="body1">Surname: {confirmationDetails?.guestInfo?.surname}</Typography>
+            <Typography variant="body1">Email: {confirmationDetails?.guestInfo?.email}</Typography>
+            <Typography variant="body1">Phone: {confirmationDetails?.guestInfo?.phone}</Typography>
+          </Container>
+        </DialogContent>
+      </Dialog>
+
     </div>
   );
 };
 
 export default BookingComponent;
+
+
+

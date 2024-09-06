@@ -206,6 +206,36 @@
 
 
 
+// import { createSlice } from '@reduxjs/toolkit';
+
+// const bookingSlice = createSlice({
+//   name: 'booking',
+//   initialState: {
+//     bookings: [],
+//     favorites: [],
+//   },
+//   reducers: {
+//     addBooking: (state, action) => {
+//       state.bookings.push(action.payload);
+//     },
+//     addFavorite: (state, action) => {
+//       state.favorites.push(action.payload);
+//     },
+//     setBookings: (state, action) => {
+//       state.bookings = action.payload;
+//     },
+//     setFavorites: (state, action) => {
+//       state.favorites = action.payload;
+//     },
+//   },
+// });
+
+// export const { addBooking, addFavorite, setBookings, setFavorites } = bookingSlice.actions;
+
+// export default bookingSlice.reducer;
+
+
+
 import { createSlice } from '@reduxjs/toolkit';
 
 const bookingSlice = createSlice({
@@ -213,10 +243,12 @@ const bookingSlice = createSlice({
   initialState: {
     bookings: [],
     favorites: [],
+    currentBookingId: null, // Added to keep track of the current booking ID
   },
   reducers: {
     addBooking: (state, action) => {
       state.bookings.push(action.payload);
+      state.currentBookingId = action.payload.id; // Set the current booking ID
     },
     addFavorite: (state, action) => {
       state.favorites.push(action.payload);
@@ -227,9 +259,17 @@ const bookingSlice = createSlice({
     setFavorites: (state, action) => {
       state.favorites = action.payload;
     },
+    setCurrentBookingId: (state, action) => {
+      state.currentBookingId = action.payload; // Action to set the current booking ID
+    },
+    resetBookingState: (state) => {
+      state.bookings = [];
+      state.currentBookingId = null; // Reset the current booking ID
+    },
   },
 });
 
-export const { addBooking, addFavorite, setBookings, setFavorites } = bookingSlice.actions;
+export const { addBooking, addFavorite, setBookings, setFavorites, setCurrentBookingId, resetBookingState } = bookingSlice.actions;
 
 export default bookingSlice.reducer;
+
