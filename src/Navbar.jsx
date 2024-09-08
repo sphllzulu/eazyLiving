@@ -1,30 +1,3 @@
-// import * as React from 'react';
-// import AppBar from '@mui/material/AppBar';
-// import Box from '@mui/material/Box';
-// import Toolbar from '@mui/material/Toolbar';
-// import Typography from '@mui/material/Typography';
-// // import Button from '@mui/material/Button';
-// import AccountCircleIcon from '@mui/icons-material/AccountCircle';
-// // import IconButton from '@mui/material/IconButton';
-// // import MenuIcon from '@mui/icons-material/Menu';
-
-// export default function ButtonAppBar() {
-//   return (
-//     <div style={{display:'flex', justifyContent:'center'}}>
-//     <Box sx={{ flexGrow: 1, display:'flex', justifyContent:'center' }}>
-//       <AppBar position="static" sx={{width:'90%', background:'white', color:'black'}}>
-//         <Toolbar>
-         
-//           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-//             Eezy Living
-//           </Typography>
-//           <AccountCircleIcon/>
-//         </Toolbar>
-//       </AppBar>
-//     </Box>
-//     </div>
-//   );
-// }
 
 
 import * as React from 'react';
@@ -34,15 +7,9 @@ import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import IconButton from '@mui/material/IconButton';
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemText from '@mui/material/ListItemText';
-import Switch from '@mui/material/Switch';
 import { Link } from 'react-router-dom';
 import CloseIcon from '@mui/icons-material/Close';
+import Slide from '@mui/material/Slide';
 
 export default function ButtonAppBar() {
   const [accountOpen, setAccountOpen] = React.useState(false);
@@ -60,14 +27,20 @@ export default function ButtonAppBar() {
     setDarkMode(!darkMode);
   };
 
+  const Transition = React.forwardRef(function Transition(props, ref) {
+    return <Slide direction="up" ref={ref} {...props} />;
+  });
+
   return (
     <div style={{ display: 'flex', justifyContent: 'center' }}>
       <Box sx={{ flexGrow: 1, display: 'flex', justifyContent: 'center' }}>
-        <AppBar position="static" sx={{ width: '90%', background: 'white', color: 'black' }}>
-          <Toolbar>
-            <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-              Eezy Living
-            </Typography>
+        <AppBar position="static" sx={{ width: '90%', background: 'white', color: 'black', boxShadow: 'none' }}>
+          <Toolbar sx={{ justifyContent: 'space-between' }}>
+            <Link to='/' style={{ textDecoration: 'none' }}>
+              <Typography variant="h6" component="div" sx={{ flexGrow: 1, color: 'black' }}>
+                Eezy Living
+              </Typography>
+            </Link>
             <IconButton color="inherit" onClick={handleAccountClick}>
               <AccountCircleIcon />
             </IconButton>
@@ -76,46 +49,136 @@ export default function ButtonAppBar() {
       </Box>
 
       {/* Account Modal */}
-      <Dialog open={accountOpen} onClose={handleAccountClose}>
-        <DialogTitle>
-          Account Options
-          <IconButton
-            aria-label="close"
-            onClick={handleAccountClose}
-            sx={{
-              position: 'absolute',
-              right: 8,
-              top: 8,
-              color: (theme) => theme.palette.grey[500],
+      {accountOpen && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0,0.5)', // Semi-transparent background
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
+        >
+          <div
+            style={{
+              backgroundColor: 'black',
+              color: 'white',
+              borderRadius: '10px',
+              border: '2px solid purple',
+              width: '80%',
+              maxWidth: '500px',
+              boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
+              overflow: 'hidden',
             }}
           >
-            <CloseIcon />
-          </IconButton>
-        </DialogTitle>
-        <DialogContent>
-          <List>
-            <Link to='/signup'>
-            <ListItem button>
-              <ListItemText primary="Sign up" />
-            </ListItem>
-            </Link>
-            <Link to='/login'>
-            <ListItem button>
-              <ListItemText primary="Sign in" />
-            </ListItem>
-            </Link>
-            <Link to='/profile'>
-            <ListItem button>
-              <ListItemText primary="Profile" />
-            </ListItem>
-            </Link>
-            <ListItem>
-              <ListItemText primary="Dark Mode" />
-              <Switch checked={darkMode} onChange={handleDarkModeToggle} />
-            </ListItem>
-          </List>
-        </DialogContent>
-      </Dialog>
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                padding: '16px',
+                backgroundColor: 'black',
+                color: 'white',
+                borderBottom: '2px solid purple',
+              }}
+            >
+              <h2 style={{ margin: 0 }}>Account Options</h2>
+              <IconButton
+                aria-label="close"
+                onClick={handleAccountClose}
+                style={{ color: 'white' }}
+              >
+                <CloseIcon />
+              </IconButton>
+            </div>
+
+            <div style={{ padding: '16px' }}>
+              <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                {/* Link to Sign up */}
+                <li style={{ marginBottom: '8px' }}>
+                  <Link to='/signup' style={{ textDecoration: 'none', color: 'inherit' }}>
+                    <button
+                      style={{
+                        backgroundColor: 'black',
+                        color: 'white',
+                        border: 'none',
+                        padding: '10px 20px',
+                        borderRadius: '5px',
+                        cursor: 'pointer',
+                        width: '100%',
+                        textAlign: 'left',
+                        fontSize: '16px',
+                        transition: 'background-color 0.3s',
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'purple'}
+                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'black'}
+                    >
+                      Sign up
+                    </button>
+                  </Link>
+                </li>
+
+                {/* Link to Sign in */}
+                <li style={{ marginBottom: '8px' }}>
+                  <Link to='/login' style={{ textDecoration: 'none', color: 'inherit' }}>
+                    <button
+                      style={{
+                        backgroundColor: 'black',
+                        color: 'white',
+                        border: 'none',
+                        padding: '10px 20px',
+                        borderRadius: '5px',
+                        cursor: 'pointer',
+                        width: '100%',
+                        textAlign: 'left',
+                        fontSize: '16px',
+                        transition: 'background-color 0.3s',
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'purple'}
+                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'black'}
+                    >
+                      Sign in
+                    </button>
+                  </Link>
+                </li>
+
+                {/* Link to Profile */}
+                <li style={{ marginBottom: '8px' }}>
+                  <Link to='/profile' style={{ textDecoration: 'none', color: 'inherit' }}>
+                    <button
+                      style={{
+                        backgroundColor: 'black',
+                        color: 'white',
+                        border: 'none',
+                        padding: '10px 20px',
+                        borderRadius: '5px',
+                        cursor: 'pointer',
+                        width: '100%',
+                        textAlign: 'left',
+                        fontSize: '16px',
+                        transition: 'background-color 0.3s',
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'purple'}
+                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'black'}
+                    >
+                      Profile
+                    </button>
+                  </Link>
+                </li>
+
+                
+              </ul>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+
+
+

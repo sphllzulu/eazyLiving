@@ -1,142 +1,88 @@
-import * as React from 'react';
+import React from 'react';
+import { Box, Typography, Grid, IconButton, Link } from '@mui/material';
+import { Facebook, Instagram, Twitter } from '@mui/icons-material';
+import { styled } from '@mui/system';
 
-import AspectRatio from '@mui/joy/AspectRatio';
-import Box from '@mui/joy/Box';
-import IconButton from '@mui/joy/IconButton';
-import Card from '@mui/joy/Card';
-import CardContent from '@mui/joy/CardContent';
-import Divider from '@mui/joy/Divider';
-import Input from '@mui/joy/Input';
-import List from '@mui/joy/List';
-import ListSubheader from '@mui/joy/ListSubheader';
-import ListItem from '@mui/joy/ListItem';
-import ListItemButton from '@mui/joy/ListItemButton';
-import Typography from '@mui/joy/Typography';
-import Sheet from '@mui/joy/Sheet';
-import FacebookRoundedIcon from '@mui/icons-material/FacebookRounded';
-import GitHubIcon from '@mui/icons-material/GitHub';
-import SendIcon from '@mui/icons-material/Send';
-import ColorLensRoundedIcon from '@mui/icons-material/ColorLensRounded';
+const FooterContainer = styled(Box)(({ theme }) => ({
+  backgroundColor: '#000000', // Black background
+  color: '#ffffff',
+  padding: theme.spacing(4),
+  marginTop: theme.spacing(8),
+}));
 
-export default function ColorInversionFooter() {
-  const [color, setColor] = React.useState('neutral');
+const FooterText = styled(Typography)(({ theme }) => ({
+  color: '#ffffff',
+}));
+
+const SocialIcon = styled(IconButton)(({ theme }) => ({
+  color: '#9b59b6', // Purple accent color
+}));
+
+const FooterLink = styled(Link)(({ theme }) => ({
+  color: '#9b59b6', // Purple accent color
+  textDecoration: 'none',
+  '&:hover': {
+    textDecoration: 'underline',
+  },
+}));
+
+const Footer = () => {
   return (
-    <Sheet
-      variant="solid"
-      color={color}
-      invertedColors
-      sx={[
-        {
-          flexGrow: 1,
-          p: 2,
-          borderRadius: { xs: 0, sm: 'sm' },
-        },
-        color !== 'neutral' && {
-          bgcolor: `${color}.800`,
-        },
-      ]}
-    >
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-        <IconButton
-          variant="soft"
-          size="sm"
-          onClick={() => {
-            const colors = ['primary', 'neutral', 'danger', 'success', 'warning'];
+    <FooterContainer component="footer">
+      <Grid container spacing={4}>
+        {/* Contact Information Section */}
+        <Grid item xs={12} md={4}>
+          <FooterText variant="h6">Contact Us</FooterText>
+          <FooterText variant="body1">
+            Hotel Grandeur, 123 Luxury Ave, City, Country
+          </FooterText>
+          <FooterText variant="body1">Phone: +123 456 7890</FooterText>
+          <FooterText variant="body1">Email: info@hotelgrandeur.com</FooterText>
+        </Grid>
 
-            const nextColorIndex = colors.indexOf(color) + 1;
-            setColor(colors[nextColorIndex] ?? colors[0]);
-          }}
-        >
-          <ColorLensRoundedIcon fontSize="small" />
-        </IconButton>
-        <Divider orientation="vertical" />
-        <IconButton variant="plain">
-          <FacebookRoundedIcon />
-        </IconButton>
-        <IconButton variant="plain">
-          <GitHubIcon />
-        </IconButton>
-        <Input
-          variant="soft"
-          placeholder="Type in your email"
-          type="email"
-          name="email"
-          endDecorator={
-            <IconButton variant="soft" aria-label="subscribe">
-              <SendIcon />
-            </IconButton>
-          }
-          sx={{ ml: 'auto', display: { xs: 'none', md: 'flex' } }}
-        />
+        {/* Social Media Icons Section */}
+        <Grid item xs={12} md={4} sx={{ textAlign: 'center' }}>
+          <FooterText variant="h6">Follow Us</FooterText>
+          <Box>
+            <SocialIcon component="a" href="https://www.facebook.com">
+              <Facebook />
+            </SocialIcon>
+            <SocialIcon component="a" href="https://www.instagram.com">
+              <Instagram />
+            </SocialIcon>
+            <SocialIcon component="a" href="https://www.twitter.com">
+              <Twitter />
+            </SocialIcon>
+          </Box>
+        </Grid>
+
+        {/* Embedded Map Section */}
+        <Grid item xs={12} md={4}>
+          <FooterText variant="h6">Our Location</FooterText>
+          <iframe
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3151.835434509181!2d144.95592581530863!3d-37.817209979751854!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x6ad65d43b2c19e2d%3A0x953baf20b8c2c4c3!2sThe%20Hotel%20Windsor!5e0!3m2!1sen!2sus!4v1694141471623!5m2!1sen!2sus"
+            width="100%"
+            height="200"
+            style={{ border: 0 }}
+            allowFullScreen=""
+            loading="lazy"
+            title="Hotel Location"
+          ></iframe>
+        </Grid>
+      </Grid>
+
+      <Box sx={{ mt: 4, textAlign: 'center' }}>
+        <FooterText variant="body2">
+          &copy; {new Date().getFullYear()} Hotel Grandeur. All rights reserved.
+        </FooterText>
+        <FooterText variant="body2">
+          <FooterLink href="/terms">Terms of Service</FooterLink> |{' '}
+          <FooterLink href="/privacy">Privacy Policy</FooterLink>
+        </FooterText>
       </Box>
-      <Divider sx={{ my: 2 }} />
-      <Box
-        sx={{
-          display: 'flex',
-          flexDirection: { xs: 'column', md: 'row' },
-          alignItems: { md: 'flex-start' },
-          justifyContent: 'space-between',
-          flexWrap: 'wrap',
-          gap: 2,
-        }}
-      >
-        <Card
-          variant="soft"
-          size="sm"
-          sx={{
-            flexDirection: { xs: 'row', md: 'column' },
-            minWidth: { xs: '100%', md: 'auto' },
-            gap: 1,
-          }}
-        >
-          <AspectRatio
-            ratio="21/9"
-            minHeight={80}
-            sx={{ flexBasis: { xs: 200, md: 'initial' } }}
-          >
-            <img alt="" src="/static/blog/mui-product-comparison/ecosystem.png" />
-          </AspectRatio>
-          <CardContent>
-            <Typography level="body-sm">Intro to the MUI ecosystem</Typography>
-            <Typography level="body-xs">Blog post</Typography>
-          </CardContent>
-        </Card>
-        <List
-          size="sm"
-          orientation="horizontal"
-          wrap
-          sx={{ flexGrow: 0, '--ListItem-radius': '8px' }}
-        >
-          <ListItem nested sx={{ width: { xs: '50%', md: 140 } }}>
-            <ListSubheader sx={{ fontWeight: 'xl' }}>Sitemap</ListSubheader>
-            <List>
-              <ListItem>
-                <ListItemButton>Services</ListItemButton>
-              </ListItem>
-              <ListItem>
-                <ListItemButton>Blog</ListItemButton>
-              </ListItem>
-              <ListItem>
-                <ListItemButton>About</ListItemButton>
-              </ListItem>
-            </List>
-          </ListItem>
-          <ListItem nested sx={{ width: { xs: '50%', md: 180 } }}>
-            <ListSubheader sx={{ fontWeight: 'xl' }}>Products</ListSubheader>
-            <List>
-              <ListItem>
-                <ListItemButton>Joy UI</ListItemButton>
-              </ListItem>
-              <ListItem>
-                <ListItemButton>Base UI</ListItemButton>
-              </ListItem>
-              <ListItem>
-                <ListItemButton>Material UI</ListItemButton>
-              </ListItem>
-            </List>
-          </ListItem>
-        </List>
-      </Box>
-    </Sheet>
+    </FooterContainer>
   );
-}
+};
+
+export default Footer;
+

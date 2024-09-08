@@ -1,345 +1,108 @@
-// import React, { useState, useEffect } from 'react';
-// import {
-//   Button, TextField, Card, CardContent, CardMedia, Typography, Grid, IconButton, Box, Dialog, DialogTitle, DialogContent, Container
-// } from '@mui/material';
-// import FavoriteIcon from '@mui/icons-material/Favorite';
-// import VisibilityIcon from '@mui/icons-material/Visibility';
-// import ShareIcon from '@mui/icons-material/Share';
-// import CloseIcon from '@mui/icons-material/Close';
-// import { useDispatch, useSelector } from 'react-redux';
-// import { doc, setDoc } from "firebase/firestore";
-// import { db, auth } from "./firebase";
-// import { addBooking, addFavorite, setBookings, setFavorites } from './BookingSlice';
-// import { setCheckInDate, setCheckOutDate, setGuests, setAmount } from './paymentSlice';
-// import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-// import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-// import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-// import { useStripe, useElements, CardElement } from '@stripe/react-stripe-js';
-
-// const roomsData = [
-//   { id: 1, type: 'standard', price: 1000, image: 'standard.jpg', rating: 4.5, amenities: ['Free WiFi', 'TV'], policies: ['No Smoking', 'No Pets'], description: 'A cozy standard room.' },
-//   { id: 2, type: 'suite', price: 2000, image: 'suite.jpg', rating: 4.8, amenities: ['Free WiFi', 'TV', 'Mini Bar'], policies: ['No Smoking', 'No Pets'], description: 'A luxurious suite with extra space.' },
-  
-//   {
-//     id: 3,
-//     type: 'double',
-//     price: 1500,
-//     image: 'double.jpg',
-//     rating: 4.6,
-//     amenities: ['Free WiFi', 'TV', 'Air Conditioning', 'Tea/Coffee Maker'],
-//     policies: ['No Smoking', 'No Pets', 'Check-in after 3 PM', 'Check-out before 11 AM'],
-//     description: 'A spacious double room with comfortable beds and modern amenities for a relaxing stay.'
-//   },
-//   {
-//     id: 4,
-//     type: 'queen',
-//     price: 1800,
-//     image: 'queen.jpg',
-//     rating: 4.7,
-//     amenities: ['Free WiFi', 'TV', 'Mini Bar', 'Work Desk'],
-//     policies: ['No Smoking', 'No Pets', 'Check-in after 3 PM', 'Check-out before 11 AM'],
-//     description: 'A stylish queen room with elegant decor, a mini bar, and a dedicated workspace.'
-//   },
-//   {
-//     id: 5,
-//     type: 'king',
-//     price: 2500,
-//     image: 'king.jpg',
-//     rating: 4.9,
-//     amenities: ['Free WiFi', 'TV', 'Private Balcony', 'Jacuzzi', 'Mini Bar'],
-//     policies: ['No Smoking', 'No Pets', 'Check-in after 2 PM', 'Check-out before 12 PM'],
-//     description: 'An opulent king room with a private balcony, a Jacuzzi, and premium amenities for the ultimate experience.'
-//   }
-// ];
-
-// const BookingComponent = () => {
-//   const [selectedType, setSelectedType] = useState('all');
-//   const [filteredRooms, setFilteredRooms] = useState(roomsData);
-//   const [selectedRoom, setSelectedRoom] = useState(null);
-//   const [open, setOpen] = useState(false);
-//   const [checkInDate, setCheckInDateLocal] = useState(null);
-//   const [checkOutDate, setCheckOutDateLocal] = useState(null);
-//   const [guests, setGuestsLocal] = useState(1);
-//   const [guestInfo, setGuestInfo] = useState({ name: '', surname: '', email: '', phone: '' });
-//   const dispatch = useDispatch();
-//   const user = useSelector((state) => state.user.user);
-//   const stripe = useStripe();
-//   const elements = useElements();
-
-//   useEffect(() => {
-//     dispatch(setBookings(roomsData));
-//     dispatch(setFavorites([]));
-//   }, [dispatch]);
-
-//   const handleFilter = (type) => {
-//     setSelectedType(type);
-//     if (type === 'all') {
-//       setFilteredRooms(roomsData);
-//     } else {
-//       setFilteredRooms(roomsData.filter(room => room.type === type));
-//     }
-//   };
-
-//   const handleOpen = (room) => {
-//     setSelectedRoom(room);
-//     setOpen(true);
-//   };
-
-//   const handleClose = () => {
-//     setOpen(false);
-//     setSelectedRoom(null);
-//   };
-
-//   const handleAddToFavorites = async (room) => {
-//     if (!user) {
-//       alert('You need to be logged in to add to favorites.');
-//       return;
-//     }
-
-//     try {
-//       const docRef = doc(db, 'favorites', room.id.toString());
-//       await setDoc(docRef, {
-//         ...room,
-//         userId: user.uid,
-//         addedAt: new Date(),
-//       });
-//       dispatch(addFavorite(room));
-//     } catch (error) {
-//       console.error("Error adding to favorites: ", error);
-//     }
-//   };
-
-//   const handleShare = (room) => {
-//     if (navigator.share) {
-//       navigator.share({
-//         title: `${room.type} Room`,
-//         text: `Check out this ${room.type} room priced at R${room.price} per night!`,
-//         url: window.location.href,
-//       });
-//     } else {
-//       alert('Your browser does not support the Share API');
-//     }
-//   };
-
-//   const handleBooking = async () => {
-//     if (!user) {
-//       alert('You need to be logged in to book a room.');
-//       return;
-//     }
-
-//     dispatch(setAmount(selectedRoom.price));
-//     dispatch(setCheckInDate(checkInDate ? checkInDate.toISOString() : null));
-//     dispatch(setCheckOutDate(checkOutDate ? checkOutDate.toISOString() : null));
-//     dispatch(setGuests(guests));
-
-//     const { error, paymentMethod } = await stripe.createPaymentMethod({
-//       type: 'card',
-//       card: elements.getElement(CardElement),
-//     });
-
-//     if (error) {
-//       console.error('Error creating payment method:', error);
-//       alert('Payment failed');
-//       return;
-//     }
-
-//     try {
-//       await setDoc(doc(db, 'bookings', `${selectedRoom.id}-${user.uid}`), {
-//         ...selectedRoom,
-//         userId: user.uid,
-//         checkInDate: checkInDate ? checkInDate.toISOString() : null,
-//         checkOutDate: checkOutDate ? checkOutDate.toISOString() : null,
-//         guests,
-//         amount: selectedRoom.price,
-//         bookedAt: new Date(),
-//         paymentMethodId: paymentMethod.id,
-//         guestInfo
-//       });
-//       dispatch(addBooking({
-//         ...selectedRoom,
-//         userId: user.uid,
-//         checkInDate: checkInDate ? checkInDate.toISOString() : null,
-//         checkOutDate: checkOutDate ? checkOutDate.toISOString() : null,
-//         guests,
-//         amount: selectedRoom.price,
-//         guestInfo
-//       }));
-//       alert('Room booked successfully');
-//       handleClose();
-//     } catch (error) {
-//       console.error('Error booking room:', error);
-//       alert('Booking failed');
-//     }
-//   };
-
-//   const handleGuestInfoChange = (e) => {
-//     setGuestInfo({ ...guestInfo, [e.target.name]: e.target.value });
-//   };
-
-//   return (
-//     <div>
-//       <Box sx={{ display: 'flex', justifyContent: 'center', margin: '40px 0', overflowX: 'auto', width: '100%', padding: '10px' }}>
-//         <Box sx={{ display: 'flex', gap: '10px' }}>
-//           <Button onClick={() => handleFilter('all')} variant="contained">All Rooms</Button>
-//           <Button onClick={() => handleFilter('standard')} variant="contained">Standard</Button>
-//           <Button onClick={() => handleFilter('suite')} variant="contained">Suite</Button>
-//           <Button onClick={() => handleFilter('double')} variant="contained">Double</Button>
-//           <Button onClick={() => handleFilter('queen')} variant="contained">Queen</Button>
-//           <Button onClick={() => handleFilter('king')} variant="contained">King</Button>
-//         </Box>
-//       </Box>
-//       <Container>
-//         <Grid container spacing={2}>
-//           {filteredRooms.map((room) => (
-//             <Grid item xs={12} sm={6} md={4} lg={3} key={room.id}>
-//               <Card>
-//                 <CardMedia component="img" height="140" image={room.image} alt={room.type} />
-//                 <CardContent>
-//                   <Typography variant="h5" component="div">
-//                     {room.type}
-//                   </Typography>
-//                   <Typography variant="body2" color="text.secondary">
-//                     R{room.price} per night
-//                   </Typography>
-//                   <Typography variant="body2" color="text.secondary">
-//                     Rating: {room.rating} stars
-//                   </Typography>
-//                 </CardContent>
-//                 <Box sx={{ display: 'flex', justifyContent: 'space-between', padding: '8px' }}>
-//                   <IconButton onClick={() => handleAddToFavorites(room)} aria-label="add to favorites">
-//                     <FavoriteIcon />
-//                   </IconButton>
-//                   <IconButton onClick={() => handleOpen(room)} aria-label="view more">
-//                     <VisibilityIcon />
-//                   </IconButton>
-//                   <IconButton onClick={() => handleShare(room)} aria-label="share">
-//                     <ShareIcon />
-//                   </IconButton>
-//                 </Box>
-//               </Card>
-//             </Grid>
-//           ))}
-//         </Grid>
-//       </Container>
-//       {selectedRoom && (
-//         <Dialog open={open} onClose={handleClose} PaperProps={{ sx: { width: '600px', maxHeight: '80vh', animation: 'fadeIn 0.5s ease' } }}>
-//           <DialogTitle>
-//             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-//               <Typography>Book Room</Typography>
-//               <IconButton onClick={handleClose}>
-//                 <CloseIcon />
-//               </IconButton>
-//             </Box>
-//           </DialogTitle>
-//           <DialogContent dividers sx={{ maxHeight: 'calc(100% - 96px)', overflowY: 'auto', scrollbarWidth: 'thin', '&::-webkit-scrollbar': { width: '6px' }, '&::-webkit-scrollbar-thumb': { backgroundColor: '#888', borderRadius: '10px' }, '&::-webkit-scrollbar-thumb:hover': { backgroundColor: '#555' } }}>
-//             <Box sx={{ marginBottom: 2 }}>
-//               <Typography variant="h6">{selectedRoom.type}</Typography>
-//               <Typography variant="body1">Price: R{selectedRoom.price} per night</Typography>
-//               <Typography variant="body1">Rating: {selectedRoom.rating} stars</Typography>
-//               <Typography variant="body1">Amenities:</Typography>
-//               <ul>
-//                 {selectedRoom.amenities.map((amenity, index) => (
-//                   <li key={index}>{amenity}</li>
-//                 ))}
-//               </ul>
-//               <Typography variant="body1">Policies:</Typography>
-//               <ul>
-//                 {selectedRoom.policies.map((policy, index) => (
-//                   <li key={index}>{policy}</li>
-//                 ))}
-//               </ul>
-//               <Typography variant="body1">Description:</Typography>
-//               <Typography variant="body2" paragraph>{selectedRoom.description}</Typography>
-//               <CardMedia component="img" height="200" image={selectedRoom.image} alt={selectedRoom.type} sx={{ borderRadius: '10px', marginTop: '10px' }} />
-//             </Box>
-//             <Box>
-//               <Typography variant="h6">Guest Information</Typography>
-//               <TextField name="name" label="First Name" value={guestInfo.name} onChange={handleGuestInfoChange} fullWidth sx={{ marginBottom: 2 }} />
-//               <TextField name="surname" label="Last Name" value={guestInfo.surname} onChange={handleGuestInfoChange} fullWidth sx={{ marginBottom: 2 }} />
-//               <TextField name="email" label="Email Address" value={guestInfo.email} onChange={handleGuestInfoChange} fullWidth sx={{ marginBottom: 2 }} />
-//               <TextField name="phone" label="Phone Number" value={guestInfo.phone} onChange={handleGuestInfoChange} fullWidth sx={{ marginBottom: 2 }} />
-//             </Box>
-//             <Box>
-//               <Typography variant="h6">Payment Information</Typography>
-//               <CardElement options={{ style: { base: { fontSize: '16px', color: '#424770', '::placeholder': { color: '#aab7c4' }, padding: '10px' }, invalid: { color: '#9e2146' } }, hidePostalCode: true }} />
-//             </Box>
-//           </DialogContent>
-//           <Box sx={{ display: 'flex', justifyContent: 'center', padding: '20px' }}>
-//             <Button onClick={handleBooking} variant="contained" color="primary" sx={{ backgroundColor: 'black', width: '100%' }} disabled={!user}>
-//               Confirm and Pay with Stripe
-//             </Button>
-//           </Box>
-//         </Dialog>
-//       )}
-//     </div>
-//   );
-// };
-
-// export default BookingComponent;
-
-
-
 
 import React, { useState, useEffect } from 'react';
 import {
-  Button, TextField, Card, CardContent, CardMedia, Typography, Grid, IconButton, Box, Dialog, DialogTitle, DialogContent, Container
+  Button, TextField, Card, CardContent, CardMedia, Typography, Grid, IconButton, Box, Dialog, DialogTitle, DialogContent, Container, InputLabel, MenuItem, Select
 } from '@mui/material';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import ShareIcon from '@mui/icons-material/Share';
 import CloseIcon from '@mui/icons-material/Close';
 import { useDispatch, useSelector } from 'react-redux';
-import { doc, setDoc,getDoc } from "firebase/firestore";
+import { doc, setDoc, getDoc, getDocs, collection } from "firebase/firestore";
 import { db, auth } from "./firebase";
-import { addBooking, addFavorite, setBookings, setFavorites, setCurrentBookingId} from './BookingSlice';
+import { addBooking, addFavorite, setBookings, setFavorites, setCurrentBookingId } from './BookingSlice';
 import { setCheckInDate, setCheckOutDate, setGuests, setAmount } from './paymentSlice';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { useStripe, useElements, CardElement } from '@stripe/react-stripe-js';
-
-const roomsData = [
-  { id: 1, type: 'standard', price: 1000, image: 'standard.jpg', rating: 4.5, amenities: ['Free WiFi', 'TV'], policies: ['No Smoking', 'No Pets'], description: 'A cozy standard room.' },
-  { id: 2, type: 'suite', price: 2000, image: 'suite.jpg', rating: 4.8, amenities: ['Free WiFi', 'TV', 'Mini Bar'], policies: ['No Smoking', 'No Pets'], description: 'A luxurious suite with extra space.' },
-  { id: 3, type: 'double', price: 1500, image: 'double.jpg', rating: 4.6, amenities: ['Free WiFi', 'TV', 'Air Conditioning', 'Tea/Coffee Maker'], policies: ['No Smoking', 'No Pets', 'Check-in after 3 PM', 'Check-out before 11 AM'], description: 'A spacious double room with comfortable beds and modern amenities for a relaxing stay.' },
-  { id: 4, type: 'queen', price: 1800, image: 'queen.jpg', rating: 4.7, amenities: ['Free WiFi', 'TV', 'Mini Bar', 'Work Desk'], policies: ['No Smoking', 'No Pets', 'Check-in after 3 PM', 'Check-out before 11 AM'], description: 'A stylish queen room with elegant decor, a mini bar, and a dedicated workspace.' },
-  { id: 5, type: 'king', price: 2500, image: 'king.jpg', rating: 4.9, amenities: ['Free WiFi', 'TV', 'Private Balcony', 'Jacuzzi', 'Mini Bar'], policies: ['No Smoking', 'No Pets', 'Check-in after 2 PM', 'Check-out before 12 PM'], description: 'An opulent king room with a private balcony, a Jacuzzi, and premium amenities for the ultimate experience.' },
-  { id: 1, type: 'standard', price: 1000, image: 'standard.jpg', rating: 4.5, amenities: ['Free WiFi', 'TV'], policies: ['No Smoking', 'No Pets'], description: 'A cozy standard room.' },
-  { id: 2, type: 'suite', price: 2000, image: 'suite.jpg', rating: 4.8, amenities: ['Free WiFi', 'TV', 'Mini Bar'], policies: ['No Smoking', 'No Pets'], description: 'A luxurious suite with extra space.' },
-  { id: 3, type: 'double', price: 1500, image: 'double.jpg', rating: 4.6, amenities: ['Free WiFi', 'TV', 'Air Conditioning', 'Tea/Coffee Maker'], policies: ['No Smoking', 'No Pets', 'Check-in after 3 PM', 'Check-out before 11 AM'], description: 'A spacious double room with comfortable beds and modern amenities for a relaxing stay.' },
-  { id: 4, type: 'queen', price: 1800, image: 'queen.jpg', rating: 4.7, amenities: ['Free WiFi', 'TV', 'Mini Bar', 'Work Desk'], policies: ['No Smoking', 'No Pets', 'Check-in after 3 PM', 'Check-out before 11 AM'], description: 'A stylish queen room with elegant decor, a mini bar, and a dedicated workspace.' },
-  { id: 5, type: 'king', price: 2500, image: 'king.jpg', rating: 4.9, amenities: ['Free WiFi', 'TV', 'Private Balcony', 'Jacuzzi', 'Mini Bar'], policies: ['No Smoking', 'No Pets', 'Check-in after 2 PM', 'Check-out before 12 PM'], description: 'An opulent king room with a private balcony, a Jacuzzi, and premium amenities for the ultimate experience.' }
-];
+import { keyframes } from '@emotion/react';
+import Footer from './Footer';
+import Slide from '@mui/material/Slide';
+import Star from '@mui/icons-material/Star';
+import StarBorder from '@mui/icons-material/StarBorder';
+// Define keyframes for the card animation
+const cardHoverAnimation = keyframes`
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.05);
+  }
+`;
 
 const BookingComponent = () => {
   const [selectedType, setSelectedType] = useState('all');
-  const [filteredRooms, setFilteredRooms] = useState(roomsData);
+  const [filteredRooms, setFilteredRooms] = useState([]);
   const [selectedRoom, setSelectedRoom] = useState(null);
   const [open, setOpen] = useState(false);
-  const [checkInDate, setCheckInDateLocal] = useState(null);
-  const [checkOutDate, setCheckOutDateLocal] = useState(null);
+  const [checkInDate, setCheckInDateLocal] = useState('');
+  const [checkOutDate, setCheckOutDateLocal] = useState('');
   const [guests, setGuestsLocal] = useState(1);
   const [guestInfo, setGuestInfo] = useState({ name: '', surname: '', email: '', phone: '' });
+  const [openConfirmation, setOpenConfirmation] = useState(false);
+  const [confirmationDetails, setConfirmationDetails] = useState(null);
+  const [favorites, setFavoritesState] = useState({}); // Track favorites
+  const [searchKeyword, setSearchKeyword] = useState(''); // State for search input
+
   const dispatch = useDispatch();
   const user = useSelector((state) => state.user.user);
   const stripe = useStripe();
   const elements = useElements();
-  const [openConfirmation, setOpenConfirmation] = useState(false); // Add state for confirmation dialog
-  const [confirmationDetails, setConfirmationDetails] = useState(null);
 
   useEffect(() => {
-    dispatch(setBookings(roomsData));
-    dispatch(setFavorites([]));
-  }, [dispatch]);
+    const fetchRoomsFromFirestore = async () => {
+      try {
+        const roomsCollection = collection(db, 'accommodation');
+        const roomSnapshot = await getDocs(roomsCollection);
+        const roomList = roomSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+        
+        setFilteredRooms(roomList);
+        dispatch(setBookings(roomList));
+      } catch (error) {
+        console.error("Error fetching rooms from Firestore: ", error);
+      }
+    };
 
-  const handleFilter = (type) => {
-    setSelectedType(type);
-    if (type === 'all') {
-      setFilteredRooms(roomsData);
-    } else {
-      setFilteredRooms(roomsData.filter(room => room.type === type));
-    }
+    fetchRoomsFromFirestore();
+  }, [dispatch]);
+   
+  
+
+
+  const handleSearch = (e) => {
+    const keyword = e.target.value.toLowerCase();
+    setSearchKeyword(keyword);
+  
+    const filtered = filteredRooms.filter(room => {
+      // Ensure room.type and room.description are strings before calling toLowerCase
+      const type = room.type ? room.type.toLowerCase() : '';
+      const description = room.description ? room.description.toLowerCase() : '';
+  
+      return type.includes(keyword) || description.includes(keyword);
+    });
+  
+    setFilteredRooms(filtered);
   };
+  
+  
+  
+
+
+  // const handleFilter = (type) => {
+  //   setSelectedType(type);
+  //   if (type === 'all') {
+  //     setFilteredRooms(roomsData);
+  //   } else {
+  //     setFilteredRooms(roomsData.filter(room => room.type === type));
+  //   }
+  // };
+
+  // const handleSearch = (e) => {
+  //   setSearchKeyword(e.target.value.toLowerCase());
+  //   const filtered = roomsData.filter(room =>
+  //     room.type.toLowerCase().includes(searchKeyword) ||
+  //     room.description.toLowerCase().includes(searchKeyword)
+  //   );
+  //   setFilteredRooms(filtered);
+  // };
 
   const handleOpen = (room) => {
     setSelectedRoom(room);
@@ -349,6 +112,10 @@ const BookingComponent = () => {
   const handleClose = () => {
     setOpen(false);
     setSelectedRoom(null);
+    setCheckInDateLocal('');
+    setCheckOutDateLocal('');
+    setGuestsLocal(1);
+    setGuestInfo({ name: '', surname: '', email: '', phone: '' });
   };
 
   const handleAddToFavorites = async (room) => {
@@ -358,81 +125,62 @@ const BookingComponent = () => {
     }
 
     try {
-      const docRef = doc(db, 'favorites', room.id.toString());
+      const docRef = doc(db, 'favorites', `${room.id}-${user.uid}`);
       await setDoc(docRef, {
         ...room,
         userId: user.uid,
         addedAt: new Date(),
       });
       dispatch(addFavorite(room));
+      setFavoritesState(prev => ({ ...prev, [room.id]: true })); // Update state
+      alert('Room added to favorites!');
     } catch (error) {
       console.error("Error adding to favorites: ", error);
     }
   };
 
-  const handleShare = (room) => {
-    if (navigator.share) {
-      navigator.share({
-        title: `${room.type} Room`,
-        text: `Check out this ${room.type} room priced at R${room.price} per night!`,
-        url: window.location.href,
-      });
-    } else {
-      alert('Your browser does not support the Share API');
-    }
+const handleShare = (room) => {
+  // Prepare the share data
+  const shareData = {
+    title: `${room.type} Room`,
+    text: `Check out this ${room.type} room priced at R${room.price} per night!`,
+    url: window.location.href // URL of the current page
   };
 
-  //   const handleBooking = async () => {
-  //   if (!user) {
-  //     alert('You need to be logged in to book a room.');
-  //     return;
-  //   }
+  // Check if the browser supports the Share API
+  if (navigator.share) {
+    navigator.share(shareData)
+      .then(() => {
+        console.log('Successfully shared');
+      })
+      .catch((error) => {
+        console.error('Error sharing:', error);
+        alert('Failed to share. Please try copying the link manually.');
+      });
+  } else {
+    // Fallback: Copy the URL to clipboard
+    navigator.clipboard.writeText(shareData.url)
+      .then(() => {
+        alert('Link copied to clipboard!');
+      })
+      .catch((error) => {
+        console.error('Failed to copy the link:', error);
+        alert('Failed to copy the link. Please copy it manually.');
+      });
+  }
+};
 
-  //   dispatch(setAmount(selectedRoom.price));
-  //   dispatch(setCheckInDate(checkInDate ? checkInDate.toISOString() : null));
-  //   dispatch(setCheckOutDate(checkOutDate ? checkOutDate.toISOString() : null));
-  //   dispatch(setGuests(guests));
-
-  //   const { error, paymentMethod } = await stripe.createPaymentMethod({
-  //     type: 'card',
-  //     card: elements.getElement(CardElement),
-  //   });
-
-  //   if (error) {
-  //     console.error('Error creating payment method:', error);
-  //     alert('Payment failed');
-  //     return;
-  //   }
-
-  //   try {
-  //     await setDoc(doc(db, 'bookings', `${selectedRoom.id}-${user.uid}`), {
-  //       ...selectedRoom,
-  //       userId: user.uid,
-  //       checkInDate: checkInDate ? checkInDate.toISOString() : null,
-  //       checkOutDate: checkOutDate ? checkOutDate.toISOString() : null,
-  //       guests,
-  //       amount: selectedRoom.price,
-  //       bookedAt: new Date(),
-  //       paymentMethodId: paymentMethod.id,
-  //       guestInfo
+  // const handleShare = (room) => {
+  //   if (navigator.share) {
+  //     navigator.share({
+  //       title: `${room.type} Room`,
+  //       text: `Check out this ${room.type} room priced at R${room.price} per night!`,
+  //       url: window.location.href,
   //     });
-  //     dispatch(addBooking({
-  //       ...selectedRoom,
-  //       userId: user.uid,
-  //       checkInDate: checkInDate ? checkInDate.toISOString() : null,
-  //       checkOutDate: checkOutDate ? checkOutDate.toISOString() : null,
-  //       guests,
-  //       amount: selectedRoom.price,
-  //       guestInfo
-  //     }));
-  //     alert('Room booked successfully');
-  //     handleClose();
-  //   } catch (error) {
-  //     console.error('Error booking room:', error);
-  //     alert('Booking failed');
+  //   } else {
+  //     alert('Your browser does not support the Share API');
   //   }
   // };
-
 
   const handleBooking = async () => {
     if (!user) {
@@ -441,8 +189,8 @@ const BookingComponent = () => {
     }
 
     dispatch(setAmount(selectedRoom.price));
-    dispatch(setCheckInDate(checkInDate ? checkInDate.toISOString() : null));
-    dispatch(setCheckOutDate(checkOutDate ? checkOutDate.toISOString() : null));
+    dispatch(setCheckInDate(checkInDate));
+    dispatch(setCheckOutDate(checkOutDate));
     dispatch(setGuests(guests));
 
     const { error, paymentMethod } = await stripe.createPaymentMethod({
@@ -461,8 +209,8 @@ const BookingComponent = () => {
       await setDoc(docRef, {
         ...selectedRoom,
         userId: user.uid,
-        checkInDate: checkInDate ? checkInDate.toISOString() : null,
-        checkOutDate: checkOutDate ? checkOutDate.toISOString() : null,
+        checkInDate,
+        checkOutDate,
         guests,
         amount: selectedRoom.price,
         bookedAt: new Date(),
@@ -473,8 +221,8 @@ const BookingComponent = () => {
       dispatch(addBooking({
         ...selectedRoom,
         userId: user.uid,
-        checkInDate: checkInDate ? checkInDate.toISOString() : null,
-        checkOutDate: checkOutDate ? checkOutDate.toISOString() : null,
+        checkInDate,
+        checkOutDate,
         guests,
         amount: selectedRoom.price,
         guestInfo
@@ -482,19 +230,16 @@ const BookingComponent = () => {
 
       dispatch(setCurrentBookingId(docRef.id));
 
-      // Fetch booking details from Firestore
       const bookingSnapshot = await getDoc(docRef);
       setConfirmationDetails(bookingSnapshot.data());
 
-      setOpenConfirmation(true); // Open confirmation dialog
+      setOpenConfirmation(true);
       handleClose();
     } catch (error) {
       console.error('Error booking room:', error);
       alert('Booking failed');
     }
   };
-
-
 
   const handleGuestInfoChange = (e) => {
     setGuestInfo({ ...guestInfo, [e.target.name]: e.target.value });
@@ -504,196 +249,280 @@ const BookingComponent = () => {
     setOpenConfirmation(false);
   };
 
+  const Transition = React.forwardRef(function Transition(props, ref) {
+    return <Slide direction="up" ref={ref} {...props} />;
+  });
+
+  const dialogAnimation = '@keyframes dialogAnimation { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }';
+
   return (
     <div>
-      <Box sx={{ display: 'flex', justifyContent: 'center', margin: '40px 0', overflowX: 'auto', width: '100%', padding: '10px' }}>
-        <Box sx={{ display: 'flex', gap: '10px' }}>
-          <Button onClick={() => handleFilter('all')} variant="contained">All Rooms</Button>
-          <Button onClick={() => handleFilter('standard')} variant="contained">Standard</Button>
-          <Button onClick={() => handleFilter('suite')} variant="contained">Suite</Button>
-          <Button onClick={() => handleFilter('double')} variant="contained">Double</Button>
-          <Button onClick={() => handleFilter('queen')} variant="contained">Queen</Button>
-          <Button onClick={() => handleFilter('king')} variant="contained">King</Button>
-        </Box>
+      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', margin: '40px 0' }}>
+        <TextField
+          variant="outlined"
+          placeholder="Search for rooms..."
+          onChange={handleSearch}
+          sx={{ marginBottom: '20px', width: '80%', maxWidth: '600px' }}
+        />
+        {/* <Box sx={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+          <Button onClick={() => handleFilter('all')} variant="contained" sx={{ background: '#6a0dad' }}>All Rooms</Button>
+          <Button onClick={() => handleFilter('standard')} variant="contained" sx={{ background: '#6a0dad' }}>Standard</Button>
+          <Button onClick={() => handleFilter('suite')} variant="contained" sx={{ background: '#6a0dad' }}>Suite</Button>
+          <Button onClick={() => handleFilter('double')} variant="contained" sx={{ background: '#6a0dad' }}>Double</Button>
+          <Button onClick={() => handleFilter('queen')} variant="contained" sx={{ background: '#6a0dad' }}>Queen</Button>
+          <Button onClick={() => handleFilter('king')} variant="contained" sx={{ background: '#6a0dad' }}>King</Button>
+        </Box> */}
       </Box>
+     {/* Card container */}
+
       <Container>
-        <Grid container spacing={2}>
-          {filteredRooms.map((room) => (
-            <Grid item xs={12} sm={6} md={4} lg={3} key={room.id}>
-              <Card>
-                <CardMedia component="img" height="140" image={room.image} alt={room.type} />
-                <CardContent>
-                  <Typography variant="h5" component="div">
-                    {room.type}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    R{room.price} per night
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Rating: {room.rating} stars
-                  </Typography>
-                </CardContent>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', padding: '8px' }}>
-                  <IconButton onClick={() => handleAddToFavorites(room)} aria-label="add to favorites">
+      <Grid container spacing={2}>
+        {filteredRooms.map((room) => (
+          <Grid item xs={12} sm={6} md={4} lg={3} key={room.id}>
+            <Card
+              sx={{
+                '&:hover': {
+                  animation: `${cardHoverAnimation} 0.3s ease-in-out`,
+                  boxShadow: 3
+                },
+                transition: 'all 0.3s ease-in-out',
+                backgroundColor: '#fff', // White background
+                border: '2px solid purple', // Purple border
+                borderRadius: '10px'
+              }}
+            >
+              <CardMedia component="img" height="140" image={room.image} alt={room.type} />
+              <CardContent>
+                <Typography variant="h5" component="div">
+                  {room.type}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  R{room.price} per night
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {Array.from({ length: 5 }, (_, index) => (
+                    index < room.rating ? <Star key={index} sx={{ fontSize: 16 }} /> : <StarBorder key={index} sx={{ fontSize: 16 }} />
+                  ))}
+                </Typography>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', marginTop: '10px' }}>
+                  <IconButton onClick={() => handleAddToFavorites(room)} sx={{ color: 'black' }}>
                     <FavoriteIcon />
                   </IconButton>
-                  <IconButton onClick={() => handleOpen(room)} aria-label="view more">
-                    <VisibilityIcon />
-                  </IconButton>
-                  <IconButton onClick={() => handleShare(room)} aria-label="share">
+                  <IconButton onClick={() => handleShare(room)} sx={{ color: 'black' }}>
                     <ShareIcon />
                   </IconButton>
+                  <IconButton onClick={() => handleOpen(room)} sx={{ color: 'black' }}>
+                    <VisibilityIcon />
+                  </IconButton>
                 </Box>
-              </Card>
-            </Grid>
-          ))}
-        </Grid>
-      </Container>
+              </CardContent>
+            </Card>
+          </Grid>
+        ))}
+      </Grid>
+    </Container>
 
-      <Dialog open={open} onClose={handleClose}>
-        <DialogTitle>
-          {selectedRoom?.type} Room
-          <IconButton
-            edge="end"
-            color="inherit"
-            onClick={handleClose}
-            aria-label="close"
-            sx={{ position: 'absolute', top: 8, right: 8 }}
+    {/* View more dialog */}
+    <Dialog
+      open={open}
+      onClose={handleClose}
+      PaperProps={{
+        sx: {
+          backgroundColor: 'black', // Black background
+          color: 'white', // White text
+          border: '2px solid purple', // Purple border
+          borderRadius: '10px',
+          animation: `${dialogAnimation} 0.4s ease-out`, // Animation
+        },
+      }}
+    >
+      <DialogTitle sx={{ position: 'relative', padding: '16px' }}>
+        Book {selectedRoom?.type}
+        <IconButton
+          edge="end"
+          color="inherit"
+          onClick={handleClose}
+          aria-label="close"
+          sx={{ position: 'absolute', right: 8, top: 8, color: 'white' }}
+        >
+          <CloseIcon />
+        </IconButton>
+      </DialogTitle>
+      <DialogContent sx={{ padding: '16px' }}>
+        <Typography variant="h6" gutterBottom>
+          Description
+        </Typography>
+        <Typography variant="body1" paragraph>
+          {selectedRoom?.description}
+        </Typography>
+        <Typography variant="h6" gutterBottom>
+          Amenities
+        </Typography>
+        <Typography variant="body1" paragraph>
+          {selectedRoom?.amenities.join(', ')}
+        </Typography>
+        <Typography variant="h6" gutterBottom>
+          Policies
+        </Typography>
+        <Typography variant="body1" paragraph>
+          {selectedRoom?.policies.join(', ')}
+        </Typography>
+        <Box sx={{ marginTop: '20px' }}>
+          <InputLabel htmlFor="check-in-date" sx={{ color: 'white' }}>Check-In Date</InputLabel>
+          <TextField
+            id="check-in-date"
+            type="date"
+            value={checkInDate}
+            onChange={(e) => setCheckInDateLocal(e.target.value)}
+            sx={{ width: '100%', marginBottom: '10px', input: { color: 'white' }, '& .MuiInputLabel-root': { color: 'white' }, '& .MuiOutlinedInput-root': { '& fieldset': { borderColor: 'purple' }, '&:hover fieldset': { borderColor: 'purple' }, } }}
+          />
+          <InputLabel htmlFor="check-out-date" sx={{ color: 'white' }}>Check-Out Date</InputLabel>
+          <TextField
+            id="check-out-date"
+            type="date"
+            value={checkOutDate}
+            onChange={(e) => setCheckOutDateLocal(e.target.value)}
+            sx={{ width: '100%', marginBottom: '10px', input: { color: 'white' }, '& .MuiInputLabel-root': { color: 'white' }, '& .MuiOutlinedInput-root': { '& fieldset': { borderColor: 'purple' }, '&:hover fieldset': { borderColor: 'purple' }, } }}
+          />
+          <InputLabel htmlFor="guests" sx={{ color: 'white' }}>Number of Guests</InputLabel>
+          <Select
+            id="guests"
+            value={guests}
+            onChange={(e) => setGuestsLocal(e.target.value)}
+            sx={{ width: '100%', marginBottom: '10px', input: { color: 'white' }, '& .MuiSelect-icon': { color: 'white' }, '& .MuiOutlinedInput-root': { '& fieldset': { borderColor: 'purple' }, '&:hover fieldset': { borderColor: 'purple' }, } }}
           >
-            <CloseIcon />
-          </IconButton>
-        </DialogTitle>
-        <DialogContent>
-          <Container>
-            <Grid container spacing={2}>
-              <Grid item xs={12} sm={6}>
-                <img src={selectedRoom?.image} alt={selectedRoom?.type} style={{ width: '100%' }} />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <Typography variant="h6">{selectedRoom?.type}</Typography>
-                <Typography variant="body2">R{selectedRoom?.price} per night</Typography>
-                <Typography variant="body2">Rating: {selectedRoom?.rating} stars</Typography>
-                <Typography variant="body2">Description: {selectedRoom?.description}</Typography>
-                <Typography variant="body2">Amenities: {selectedRoom?.amenities.join(', ')}</Typography>
-                <Typography variant="body2">Policies: {selectedRoom?.policies.join(', ')}</Typography>
-              </Grid>
-            </Grid>
-            <Box mt={2}>
-              <LocalizationProvider dateAdapter={AdapterDayjs}>
-                <Grid container spacing={2}>
-                  <Grid item xs={12} sm={6}>
-                    <DatePicker
-                      label="Check-in Date"
-                      value={checkInDate}
-                      onChange={(date) => setCheckInDateLocal(date)}
-                      renderInput={(params) => <TextField {...params} fullWidth />}
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <DatePicker
-                      label="Check-out Date"
-                      value={checkOutDate}
-                      onChange={(date) => setCheckOutDateLocal(date)}
-                      renderInput={(params) => <TextField {...params} fullWidth />}
-                    />
-                  </Grid>
-                </Grid>
-              </LocalizationProvider>
-              <Box mt={2}>
-                <TextField
-                  type="number"
-                  label="Number of Guests"
-                  value={guests}
-                  onChange={(e) => setGuestsLocal(Number(e.target.value))}
-                  fullWidth
-                />
-              </Box>
-              <Box mt={2}>
-                <TextField
-                  label="Name"
-                  name="name"
-                  value={guestInfo.name}
-                  onChange={handleGuestInfoChange}
-                  fullWidth
-                />
-              </Box>
-              <Box mt={2}>
-                <TextField
-                  label="Surname"
-                  name="surname"
-                  value={guestInfo.surname}
-                  onChange={handleGuestInfoChange}
-                  fullWidth
-                />
-              </Box>
-              <Box mt={2}>
-                <TextField
-                  label="Email Address"
-                  name="email"
-                  type="email"
-                  value={guestInfo.email}
-                  onChange={handleGuestInfoChange}
-                  fullWidth
-                />
-              </Box>
-              <Box mt={2}>
-                <TextField
-                  label="Phone Number"
-                  name="phone"
-                  type="tel"
-                  value={guestInfo.phone}
-                  onChange={handleGuestInfoChange}
-                  fullWidth
-                />
-              </Box>
-              <Box mt={2}>
-                <CardElement />
-              </Box>
-              <Box mt={2} sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-                <Button variant="contained" color="primary" onClick={handleBooking}>
-                  Book Now
-                </Button>
-              </Box>
-            </Box>
-          </Container>
-        </DialogContent>
-      </Dialog>
+            {[1, 2, 3, 4, 5].map(num => (
+              <MenuItem key={num} value={num}>{num}</MenuItem>
+            ))}
+          </Select>
+          <Typography variant="h6" gutterBottom>
+            Guest Information
+          </Typography>
+          <TextField
+            label="Name"
+            name="name"
+            value={guestInfo.name}
+            onChange={handleGuestInfoChange}
+            fullWidth
+            sx={{ marginBottom: '10px', '& .MuiInputLabel-root': { color: 'white' }, '& .MuiOutlinedInput-root': { '& fieldset': { borderColor: 'purple' }, '&:hover fieldset': { borderColor: 'purple' }, } }}
+          />
+          <TextField
+            label="Surname"
+            name="surname"
+            value={guestInfo.surname}
+            onChange={handleGuestInfoChange}
+            fullWidth
+            sx={{ marginBottom: '10px', '& .MuiInputLabel-root': { color: 'white' }, '& .MuiOutlinedInput-root': { '& fieldset': { borderColor: 'purple' }, '&:hover fieldset': { borderColor: 'purple' }, } }}
+          />
+          <TextField
+            label="Email Address"
+            name="email"
+            value={guestInfo.email}
+            onChange={handleGuestInfoChange}
+            fullWidth
+            sx={{ marginBottom: '10px', '& .MuiInputLabel-root': { color: 'white' }, '& .MuiOutlinedInput-root': { '& fieldset': { borderColor: 'purple' }, '&:hover fieldset': { borderColor: 'purple' }, } }}
+          />
+          <TextField
+            label="Phone Number"
+            name="phone"
+            value={guestInfo.phone}
+            onChange={handleGuestInfoChange}
+            fullWidth
+            sx={{ marginBottom: '10px', '& .MuiInputLabel-root': { color: 'white' }, '& .MuiOutlinedInput-root': { '& fieldset': { borderColor: 'purple' }, '&:hover fieldset': { borderColor: 'purple' }, } }}
+          />
+          <CardElement options={{ style: { base: { fontSize: '16px', color: 'white' } } }} />
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
+            <Button variant="contained" color="primary" onClick={handleBooking} sx={{ backgroundColor: 'purple', '&:hover': { backgroundColor: '#6a1b9a' } }}>
+              Book Now
+            </Button>
+          </Box>
+        </Box>
+      </DialogContent>
+    </Dialog>
 
-{/* Confirmation Dialog */}
-<Dialog open={openConfirmation} onClose={handleConfirmationClose}>
-        <DialogTitle>
-          Booking Confirmation
-          <IconButton
-            edge="end"
-            color="inherit"
-            onClick={handleConfirmationClose}
-            aria-label="close"
-            sx={{ position: 'absolute', top: 8, right: 8 }}
-          >
-            <CloseIcon />
-          </IconButton>
-        </DialogTitle>
-        <DialogContent>
-          <Container>
-            <Typography variant="h6">Booking Details</Typography>
-            <Typography variant="body1">Room Type: {confirmationDetails?.type}</Typography>
-            <Typography variant="body1">Price: R{confirmationDetails?.price} per night</Typography>
-            <Typography variant="body1">Check-in Date: {new Date(confirmationDetails?.checkInDate).toLocaleDateString()}</Typography>
-            <Typography variant="body1">Check-out Date: {new Date(confirmationDetails?.checkOutDate).toLocaleDateString()}</Typography>
-            <Typography variant="body1">Guests: {confirmationDetails?.guests}</Typography>
-            <Typography variant="body1">Name: {confirmationDetails?.guestInfo?.name}</Typography>
-            <Typography variant="body1">Surname: {confirmationDetails?.guestInfo?.surname}</Typography>
-            <Typography variant="body1">Email: {confirmationDetails?.guestInfo?.email}</Typography>
-            <Typography variant="body1">Phone: {confirmationDetails?.guestInfo?.phone}</Typography>
-          </Container>
-        </DialogContent>
-      </Dialog>
-
+      {/* Booking confirmation */}
+      <Dialog
+      open={openConfirmation}
+      onClose={handleConfirmationClose}
+      TransitionComponent={Transition}
+      maxWidth="sm"
+      fullWidth
+      sx={{
+        '& .MuiDialog-paper': {
+          backgroundColor: 'black', // Black background
+          color: 'white', // White text
+          borderRadius: '10px',
+          border: '2px solid purple', // Purple border
+          boxShadow: '0 4px 8px rgba(0, 0, 0, 0.5)',
+          animation: 'fadeIn 0.5s ease-in-out', // Animation
+        },
+      }}
+    >
+      <DialogTitle
+        sx={{
+          position: 'relative',
+          borderBottom: '2px solid purple',
+          padding: '16px',
+          marginBottom: '8px',
+          '& h2': {
+            margin: 0,
+          },
+        }}
+      >
+        Booking Confirmation
+        <IconButton
+          edge="end"
+          color="inherit"
+          onClick={handleConfirmationClose}
+          aria-label="close"
+          sx={{
+            position: 'absolute',
+            right: 8,
+            top: 8,
+            color: 'white',
+          }}
+        >
+          <CloseIcon />
+        </IconButton>
+      </DialogTitle>
+      <DialogContent
+        sx={{
+          padding: '16px',
+          '& h6': {
+            marginBottom: '16px',
+          },
+          '& p': {
+            margin: '8px 0',
+          },
+        }}
+      >
+        <Typography variant="h6" gutterBottom>
+          Booking Details
+        </Typography>
+        {confirmationDetails && (
+          <Box>
+            <Typography variant="body1" paragraph>
+              <strong>Room Type:</strong> {confirmationDetails.type}
+            </Typography>
+            <Typography variant="body1" paragraph>
+              <strong>Check-In Date:</strong> {confirmationDetails.checkInDate}
+            </Typography>
+            <Typography variant="body1" paragraph>
+              <strong>Check-Out Date:</strong> {confirmationDetails.checkOutDate}
+            </Typography>
+            <Typography variant="body1" paragraph>
+              <strong>Number of Guests:</strong> {confirmationDetails.guests}
+            </Typography>
+            <Typography variant="body1" paragraph>
+              <strong>Total Amount:</strong> R{confirmationDetails.amount}
+            </Typography>
+          </Box>
+        )}
+      </DialogContent>
+    </Dialog>
+      <Footer/>
     </div>
   );
 };
 
 export default BookingComponent;
-
-
-

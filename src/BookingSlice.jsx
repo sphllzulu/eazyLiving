@@ -273,3 +273,68 @@ export const { addBooking, addFavorite, setBookings, setFavorites, setCurrentBoo
 
 export default bookingSlice.reducer;
 
+
+
+// import { createSlice } from '@reduxjs/toolkit';
+// import { db } from './firebase'; // Make sure to import your Firestore instance
+// import { collection, addDoc } from 'firebase/firestore'; // Firestore functions
+
+// const bookingSlice = createSlice({
+//   name: 'booking',
+//   initialState: {
+//     bookings: [],
+//     favorites: [],
+//     currentBookingId: null, // Track the current booking ID
+//     accommodation: [], // Add accommodation to the initial state
+//   },
+//   reducers: {
+//     addBooking: (state, action) => {
+//       state.bookings.push(action.payload);
+//       state.currentBookingId = action.payload.id; // Set the current booking ID
+//     },
+//     addFavorite: (state, action) => {
+//       state.favorites.push(action.payload);
+//     },
+//     setBookings: (state, action) => {
+//       state.bookings = action.payload;
+//     },
+//     setFavorites: (state, action) => {
+//       state.favorites = action.payload;
+//     },
+//     setCurrentBookingId: (state, action) => {
+//       state.currentBookingId = action.payload; // Set the current booking ID
+//     },
+//     resetBookingState: (state) => {
+//       state.bookings = [];
+//       state.currentBookingId = null; // Reset the current booking ID
+//     },
+//     addAccommodation: (state, action) => {
+//       state.accommodation.push(action.payload); // Add the accommodation to Redux state
+//     },
+//   },
+// });
+
+// // Action to add accommodation to Firestore
+// export const addAccommodationToFirestore = (roomData) => async (dispatch) => {
+//   try {
+//     // Add the room information to the 'accommodation' collection in Firestore
+//     const docRef = await addDoc(collection(db, 'accommodation'), roomData);
+    
+//     // After pushing to Firestore, update the Redux state
+//     dispatch(addAccommodation({ ...roomData, id: docRef.id }));
+//   } catch (error) {
+//     console.error('Error adding accommodation to Firestore:', error);
+//   }
+// };
+
+// export const { 
+//   addBooking, 
+//   addFavorite, 
+//   setBookings, 
+//   setFavorites, 
+//   setCurrentBookingId, 
+//   resetBookingState, 
+//   addAccommodation // Export the new accommodation action 
+// } = bookingSlice.actions;
+
+// export default bookingSlice.reducer;
