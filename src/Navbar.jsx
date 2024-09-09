@@ -50,56 +50,59 @@ export default function ButtonAppBar() {
 
       {/* Account Modal */}
       {accountOpen && (
+  <Slide direction="up" in={accountOpen} mountOnEnter unmountOnExit>
+    <div
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)', // Semi-transparent background
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 1300, // Adjust this value as needed
+      }}
+    >
+      <div
+        style={{
+          backgroundColor: 'black',
+          color: 'white',
+          borderRadius: '10px',
+          border: '2px solid purple',
+          width: '80%',
+          maxWidth: '500px',
+          boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
+          overflow: 'hidden',
+          zIndex: 1400, // Ensure this is higher than the background
+        }}
+      >
         <div
           style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: 'rgba(0, 0, 0,0.5)', // Semi-transparent background
             display: 'flex',
-            justifyContent: 'center',
+            justifyContent: 'space-between',
             alignItems: 'center',
+            padding: '16px',
+            backgroundColor: 'black',
+            color: 'white',
+            borderBottom: '2px solid purple',
           }}
         >
-          <div
-            style={{
-              backgroundColor: 'black',
-              color: 'white',
-              borderRadius: '10px',
-              border: '2px solid purple',
-              width: '80%',
-              maxWidth: '500px',
-              boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
-              overflow: 'hidden',
-            }}
+          <h2 style={{ margin: 0 }}>Account Options</h2>
+          <IconButton
+            aria-label="close"
+            onClick={handleAccountClose}
+            style={{ color: 'white' }}
           >
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                padding: '16px',
-                backgroundColor: 'black',
-                color: 'white',
-                borderBottom: '2px solid purple',
-              }}
-            >
-              <h2 style={{ margin: 0 }}>Account Options</h2>
-              <IconButton
-                aria-label="close"
-                onClick={handleAccountClose}
-                style={{ color: 'white' }}
-              >
-                <CloseIcon />
-              </IconButton>
-            </div>
+            <CloseIcon />
+          </IconButton>
+        </div>
 
-            <div style={{ padding: '16px' }}>
-              <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-                {/* Link to Sign up */}
-                <li style={{ marginBottom: '8px' }}>
+        <div style={{ padding: '16px' }}>
+          <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+            {/* Link to Sign up */}
+            <li style={{ marginBottom: '8px' }}>
                   <Link to='/signup' style={{ textDecoration: 'none', color: 'inherit' }}>
                     <button
                       style={{
@@ -168,14 +171,14 @@ export default function ButtonAppBar() {
                       Profile
                     </button>
                   </Link>
-                </li>
-
-                
-              </ul>
-            </div>
-          </div>
+                  </li>
+          </ul>
         </div>
-      )}
+      </div>
+    </div>
+  </Slide>
+)}
+
     </div>
   );
 }
