@@ -359,14 +359,15 @@ const handleShare = (room) => {
           Amenities
         </Typography>
         <Typography variant="body1" paragraph>
-          {selectedRoom?.amenities.join(', ')}
-        </Typography>
-        <Typography variant="h6" gutterBottom>
+  {selectedRoom?.amenities?.join(', ') || 'No amenities available'}
+</Typography>
+<Typography variant="h6" gutterBottom>
           Policies
         </Typography>
-        <Typography variant="body1" paragraph>
-          {selectedRoom?.policies.join(', ')}
-        </Typography>
+<Typography variant="body1" paragraph>
+  {selectedRoom?.policies?.join(', ') || 'No policies available'}
+</Typography>
+
         <Box sx={{ marginTop: '20px' }}>
           <InputLabel htmlFor="check-in-date" sx={{ color: 'white' }}>Check-In Date</InputLabel>
           <TextField
