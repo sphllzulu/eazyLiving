@@ -34,10 +34,10 @@ const Footer = () => {
         <Grid item xs={12} md={4}>
           <FooterText variant="h6">Contact Us</FooterText>
           <FooterText variant="body1">
-            Hotel Grandeur, 123 Luxury Ave, City, Country
+            EezyLiving, 123 Luxury Ave, City, Country
           </FooterText>
           <FooterText variant="body1">Phone: +123 456 7890</FooterText>
-          <FooterText variant="body1">Email: info@hotelgrandeur.com</FooterText>
+          <FooterText variant="body1">Email: info@eezyLiving.com</FooterText>
         </Grid>
 
         {/* Social Media Icons Section */}
@@ -73,7 +73,7 @@ const Footer = () => {
 
       <Box sx={{ mt: 4, textAlign: 'center' }}>
         <FooterText variant="body2">
-          &copy; {new Date().getFullYear()} Hotel Grandeur. All rights reserved.
+          &copy; {new Date().getFullYear()}EezyLiving . All rights reserved.
         </FooterText>
         <FooterText variant="body2">
           <FooterLink href="/terms">Terms of Service</FooterLink> |{' '}

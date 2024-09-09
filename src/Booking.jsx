@@ -17,7 +17,9 @@ import { keyframes } from '@emotion/react';
 import Footer from './Footer';
 import Slide from '@mui/material/Slide';
 import Star from '@mui/icons-material/Star';
+import ReviewSection from './ReviewSection'
 import StarBorder from '@mui/icons-material/StarBorder';
+import UsersList from './ReviewSection';
 // Define keyframes for the card animation
 const cardHoverAnimation = keyframes`
   from {
@@ -521,6 +523,7 @@ const handleShare = (room) => {
         )}
       </DialogContent>
     </Dialog>
+    <UsersList/>
       <Footer/>
     </div>
   );

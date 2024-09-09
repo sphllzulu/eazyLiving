@@ -12,6 +12,8 @@ import Landing from './Landing';
 // import Home from "./components/Home";
 import SignIn from "./SignIn";
 import PaymentComponent from './PaymentComponent';
+import TermsOfUse from './TermsOfUse'
+import PrivacyTerms from './PrivacyTerms';
 
 function App() {
   return (
@@ -20,6 +22,8 @@ function App() {
         <Route path="/" element={<Landing />} />
         <Route path="/signup" element={<SignUp />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/terms" element={<TermsOfUse />} />
+        <Route path="/privacy" element={<PrivacyTerms />} />
         
         <Route path="/login" element={<SignIn />} />
         <Route path="/payment" element={<PaymentComponent />} />
@@ -28,6 +32,7 @@ function App() {
     </Router>
   );
 }
+
 
 export default App;
 
