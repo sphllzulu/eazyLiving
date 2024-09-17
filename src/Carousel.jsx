@@ -5,7 +5,7 @@ import { styled } from '@mui/system';
 const Container = styled(Box)(({ theme }) => ({
   position: 'relative',
   width: '90%',
-  height: '500px',
+  // height: '500px',
   overflow: 'hidden', // Ensure that images don't overflow the container
 }));
 

@@ -18,10 +18,17 @@ const firebaseConfig = {
 
 export const app = initializeApp(firebaseConfig);
 // const analytics = getAnalytics(app);
-
-
-
-
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 export const storage = getStorage(app);
+
+
+export const sendEmail = (user) => {
+  return sendEmailVerification(user)
+    .then(() => {
+      console.log("Verification email sent");
+    })
+    .catch((error) => {
+      console.error("Error sending email", error);
+    });
+};

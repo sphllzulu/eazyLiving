@@ -1,5 +1,3 @@
-
-
 import * as React from 'react';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
@@ -58,11 +56,11 @@ export default function ButtonAppBar() {
         left: 0,
         right: 0,
         bottom: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.5)', // Semi-transparent background
+        backgroundColor: 'rgba(0, 0, 0, 0.5)', 
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-        zIndex: 1300, // Adjust this value as needed
+        zIndex: 1300, 
       }}
     >
       <div
@@ -75,7 +73,7 @@ export default function ButtonAppBar() {
           maxWidth: '500px',
           boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
           overflow: 'hidden',
-          zIndex: 1400, // Ensure this is higher than the background
+          zIndex: 1400, 
         }}
       >
         <div

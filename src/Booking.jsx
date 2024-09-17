@@ -7,6 +7,7 @@ import FavoriteIcon from '@mui/icons-material/Favorite';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import ShareIcon from '@mui/icons-material/Share';
 import CloseIcon from '@mui/icons-material/Close';
+ import axios from 'axios'; 
 import { useDispatch, useSelector } from 'react-redux';
 import { doc, setDoc, getDoc, getDocs, collection } from "firebase/firestore";
 import { db, auth } from "./firebase";
@@ -184,10 +185,12 @@ const handleShare = (room) => {
   //   }
   // };
 
-  const handleBooking = async () => {
+ 
+
+const handleBooking = async () => {
     if (!user) {
-      alert('You need to be logged in to book a room.');
-      return;
+        alert('You need to be logged in to book a room.');
+        return;
     }
 
     dispatch(setAmount(selectedRoom.price));
@@ -196,52 +199,67 @@ const handleShare = (room) => {
     dispatch(setGuests(guests));
 
     const { error, paymentMethod } = await stripe.createPaymentMethod({
-      type: 'card',
-      card: elements.getElement(CardElement),
+        type: 'card',
+        card: elements.getElement(CardElement),
     });
 
     if (error) {
-      console.error('Error creating payment method:', error);
-      alert('Payment failed');
-      return;
+        console.error('Error creating payment method:', error);
+        alert('Payment failed');
+        return;
     }
 
     try {
-      const docRef = doc(db, 'bookings', `${selectedRoom.id}-${user.uid}`);
-      await setDoc(docRef, {
-        ...selectedRoom,
-        userId: user.uid,
-        checkInDate,
-        checkOutDate,
-        guests,
-        amount: selectedRoom.price,
-        bookedAt: new Date(),
-        paymentMethodId: paymentMethod.id,
-        guestInfo
-      });
+        const docRef = doc(db, 'bookings', `${selectedRoom.id}-${user.uid}`);
+        await setDoc(docRef, {
+            ...selectedRoom,
+            userId: user.uid,
+            checkInDate,
+            checkOutDate,
+            guests,
+            amount: selectedRoom.price,
+            bookedAt: new Date(),
+            paymentMethodId: paymentMethod.id,
+            guestInfo
+        });
 
-      dispatch(addBooking({
-        ...selectedRoom,
-        userId: user.uid,
-        checkInDate,
-        checkOutDate,
-        guests,
-        amount: selectedRoom.price,
-        guestInfo
-      }));
+        dispatch(addBooking({
+            ...selectedRoom,
+            userId: user.uid,
+            checkInDate,
+            checkOutDate,
+            guests,
+            amount: selectedRoom.price,
+            guestInfo
+        }));
 
-      dispatch(setCurrentBookingId(docRef.id));
+        dispatch(setCurrentBookingId(docRef.id));
 
-      const bookingSnapshot = await getDoc(docRef);
-      setConfirmationDetails(bookingSnapshot.data());
+        const bookingSnapshot = await getDoc(docRef);
+        setConfirmationDetails(bookingSnapshot.data());
 
-      setOpenConfirmation(true);
-      handleClose();
+        setOpenConfirmation(true);
+        handleClose();
+
+        // Notify user via Formspree
+        await axios.post('https://formspree.io/f/meojwldj', {
+            name: guestInfo.name,
+            email: guestInfo.email,
+            subject: `Booking Confirmation for ${selectedRoom.type} Room`,
+            message: `Your booking for ${selectedRoom.type} from ${checkInDate} to ${checkOutDate} has been confirmed. Room Price: R${selectedRoom.price} per night.\n\nThank you for booking with us!`
+        }, {
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        alert('Booking confirmed! A confirmation email has been sent to you.');
     } catch (error) {
-      console.error('Error booking room:', error);
-      alert('Booking failed');
+        console.error('Error booking room:', error);
+        alert('Booking failed');
     }
-  };
+};
+
 
   const handleGuestInfoChange = (e) => {
     setGuestInfo({ ...guestInfo, [e.target.name]: e.target.value });

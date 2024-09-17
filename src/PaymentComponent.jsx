@@ -351,7 +351,7 @@ const PaymentComponent = () => {
 
   const handleToken = (token) => {
     dispatch(setAmount(paymentDetails.amount));
-    // Handle token with backend here
+    
   };
 
   return (
