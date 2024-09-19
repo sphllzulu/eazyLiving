@@ -343,10 +343,9 @@ import {
   Dialog, DialogTitle, DialogContent, DialogActions
 } from '@mui/material';
 import { useDispatch, useSelector } from 'react-redux';
-import { auth, db, storage } from './firebase';
+import { auth, db } from './firebase';
 import { signOut } from 'firebase/auth';
 import { query, where, getDocs, collection, deleteDoc, doc } from 'firebase/firestore';
-import { uploadBytes, getDownloadURL, ref } from 'firebase/storage';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import LogoutIcon from '@mui/icons-material/Logout';
 import { useNavigate } from 'react-router-dom';
@@ -367,6 +366,7 @@ const Profile = () => {
   useEffect(() => {
     if (user) {
       fetchProfileData(user.uid);
+      loadProfilePicture();
     }
   }, [user]);
 
@@ -395,12 +395,28 @@ const Profile = () => {
       }));
       setBookingsLocal(bookingsList);
       dispatch(setBookings(bookingsList));
-
-      // Assume profilePicUrl comes from Firestore or storage
-      const profilePicUrl = 'path/to/profilePicture.jpg';
-      setProfilePicture(profilePicUrl);
     } catch (error) {
       console.error('Error fetching profile data:', error);
+    }
+  };
+
+  const loadProfilePicture = () => {
+    const savedImage = localStorage.getItem('profilePicture');
+    if (savedImage) {
+      setProfilePicture(savedImage);
+    }
+  };
+
+  const handleUploadProfilePicture = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result;
+        localStorage.setItem('profilePicture', base64String);
+        setProfilePicture(base64String);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -416,16 +432,6 @@ const Profile = () => {
   const handleBookingClick = (booking) => {
     setSelectedBooking(booking);
     setOpenDialog(true);
-  };
-
-  const handleUploadProfilePicture = async (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const storageRef = ref(storage, `profilePictures/${user.uid}`);
-      await uploadBytes(storageRef, file);
-      const downloadURL = await getDownloadURL(storageRef);
-      setProfilePicture(downloadURL);
-    }
   };
 
   const handleLogout = async () => {
