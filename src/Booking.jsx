@@ -21,6 +21,7 @@ import Star from '@mui/icons-material/Star';
 import ReviewSection from './ReviewSection'
 import StarBorder from '@mui/icons-material/StarBorder';
 import UsersList from './ReviewSection';
+
 // Define keyframes for the card animation
 const cardHoverAnimation = keyframes`
   from {
@@ -44,12 +45,15 @@ const BookingComponent = () => {
   const [confirmationDetails, setConfirmationDetails] = useState(null);
   const [favorites, setFavoritesState] = useState({}); // Track favorites
   const [searchKeyword, setSearchKeyword] = useState(''); // State for search input
-
+  
   const dispatch = useDispatch();
   const user = useSelector((state) => state.user.user);
   const stripe = useStripe();
   const elements = useElements();
-
+  const CONFIG = {
+    SERVER_URL: 'http://localhost:3000' 
+  };
+  
   useEffect(() => {
     const fetchRoomsFromFirestore = async () => {
       try {
@@ -87,25 +91,6 @@ const BookingComponent = () => {
   
   
   
-
-
-  // const handleFilter = (type) => {
-  //   setSelectedType(type);
-  //   if (type === 'all') {
-  //     setFilteredRooms(roomsData);
-  //   } else {
-  //     setFilteredRooms(roomsData.filter(room => room.type === type));
-  //   }
-  // };
-
-  // const handleSearch = (e) => {
-  //   setSearchKeyword(e.target.value.toLowerCase());
-  //   const filtered = roomsData.filter(room =>
-  //     room.type.toLowerCase().includes(searchKeyword) ||
-  //     room.description.toLowerCase().includes(searchKeyword)
-  //   );
-  //   setFilteredRooms(filtered);
-  // };
 
   const handleOpen = (room) => {
     setSelectedRoom(room);
@@ -173,93 +158,287 @@ const handleShare = (room) => {
   }
 };
 
-  // const handleShare = (room) => {
-  //   if (navigator.share) {
-  //     navigator.share({
-  //       title: `${room.type} Room`,
-  //       text: `Check out this ${room.type} room priced at R${room.price} per night!`,
-  //       url: window.location.href,
-  //     });
-  //   } else {
-  //     alert('Your browser does not support the Share API');
-  //   }
-  // };
+// const handleBooking = async () => {
+//   if (!user) {
+//       alert('You need to be logged in to book a room.');
+//       return;
+//   }
+
+//   // Check if the room is already booked by this user
+//   const bookingsCollection = collection(db, 'bookings');
+//   const bookingQuery = await getDocs(bookingsCollection);
+//   const existingBooking = bookingQuery.docs.find(doc => {
+//       const bookingData = doc.data();
+//       return bookingData.userId === user.uid && bookingData.id === selectedRoom.id;
+//   });
+
+//   if (existingBooking) {
+//       alert('You have already booked this room. Please check your bookings.');
+//       return;
+//   }
+
+//   // Dispatch necessary details to Redux
+//   dispatch(setAmount(selectedRoom.price));
+//   dispatch(setCheckInDate(checkInDate));
+//   dispatch(setCheckOutDate(checkOutDate));
+//   dispatch(setGuests(guests));
+
+//   // Create payment method with Stripe
+//   const { error, paymentMethod } = await stripe.createPaymentMethod({
+//       type: 'card',
+//       card: elements.getElement(CardElement),
+//   });
+
+//   if (error) {
+//       console.error('Error creating payment method:', error);
+//       alert('Payment failed');
+//       return;
+//   }
+
+//   try {
+//       const docRef = doc(db, 'bookings', `${selectedRoom.id}-${user.uid}`);
+//       await setDoc(docRef, {
+//           ...selectedRoom,
+//           userId: user.uid,
+//           checkInDate,
+//           checkOutDate,
+//           guests,
+//           amount: selectedRoom.price,
+//           bookedAt: new Date(),
+//           paymentMethodId: paymentMethod.id,
+//           guestInfo,
+//           status: 'pending' 
+//       });
+
+//       // Dispatch booking to Redux store with status
+//       dispatch(addBooking({
+//           ...selectedRoom,
+//           userId: user.uid,
+//           checkInDate,
+//           checkOutDate,
+//           guests,
+//           amount: selectedRoom.price,
+//           guestInfo,
+//           status: 'pending' 
+//       }));
+
+//       // Set the booking ID in Redux
+//       dispatch(setCurrentBookingId(docRef.id));
+
+//       // Retrieve booking details from Firestore and set confirmation details
+//       const bookingSnapshot = await getDoc(docRef);
+//       setConfirmationDetails(bookingSnapshot.data());
+
+//       // Open confirmation modal and close booking form
+//       setOpenConfirmation(true);
+//       handleClose();
+
+//       // Notify user via Formspree
+//       await axios.post('https://formspree.io/f/meojwldj', {
+//           name: guestInfo.name,
+//           email: guestInfo.email,
+//           subject: `Booking Confirmation for ${selectedRoom.type} Room`,
+//           message: `Your booking for ${selectedRoom.type} from ${checkInDate} to ${checkOutDate} has been confirmed. Room Price: R${selectedRoom.price} per night.\n\nThank you for booking with us!`
+//       }, {
+//           headers: {
+//               'Content-Type': 'application/json'
+//           }
+//       });
+
+//       alert('Booking confirmed! A confirmation email has been sent to you.');
+//   } catch (error) {
+//       console.error('Error booking room:', error);
+//       alert('Booking failed');
+//   }
+// };
+
 
  
 
+// const handleBooking = async () => {
+//     if (!user) {
+//         alert('You need to be logged in to book a room.');
+//         return;
+//     }
+
+//     // Dispatch necessary details to Redux
+//     dispatch(setAmount(selectedRoom.price));
+//     dispatch(setCheckInDate(checkInDate));
+//     dispatch(setCheckOutDate(checkOutDate));
+//     dispatch(setGuests(guests));
+
+//     // Create payment method with Stripe
+//     const { error, paymentMethod } = await stripe.createPaymentMethod({
+//         type: 'card',
+//         card: elements.getElement(CardElement),
+//     });
+
+//     if (error) {
+//         console.error('Error creating payment method:', error);
+//         alert('Payment failed');
+//         return;
+//     }
+
+//     try {
+//         const docRef = doc(db, 'bookings', `${selectedRoom.id}-${user.uid}`);
+//         await setDoc(docRef, {
+//             ...selectedRoom,
+//             userId: user.uid,
+//             checkInDate,
+//             checkOutDate,
+//             guests,
+//             amount: selectedRoom.price,
+//             bookedAt: new Date(),
+//             paymentMethodId: paymentMethod.id,
+//             guestInfo,
+//             status: 'pending' 
+//         });
+
+//         // Dispatch booking to Redux store with status
+//         dispatch(addBooking({
+//             ...selectedRoom,
+//             userId: user.uid,
+//             checkInDate,
+//             checkOutDate,
+//             guests,
+//             amount: selectedRoom.price,
+//             guestInfo,
+//             status: 'pending' 
+//         }));
+
+//         // Set the booking ID in Redux
+//         dispatch(setCurrentBookingId(docRef.id));
+
+//         // Retrieve booking details from Firestore and set confirmation details
+//         const bookingSnapshot = await getDoc(docRef);
+//         setConfirmationDetails(bookingSnapshot.data());
+
+//         // Open confirmation modal and close booking form
+//         setOpenConfirmation(true);
+//         handleClose();
+
+//         // Notify user via Formspree
+//         await axios.post('https://formspree.io/f/meojwldj', {
+//             name: guestInfo.name,
+//             email: guestInfo.email,
+//             subject: `Booking Confirmation for ${selectedRoom.type} Room`,
+//             message: `Your booking for ${selectedRoom.type} from ${checkInDate} to ${checkOutDate} has been confirmed. Room Price: R${selectedRoom.price} per night.\n\nThank you for booking with us!`
+//         }, {
+//             headers: {
+//                 'Content-Type': 'application/json'
+//             }
+//         });
+
+//         alert('Booking confirmed! A confirmation email has been sent to you.');
+//     } catch (error) {
+//         console.error('Error booking room:', error);
+//         alert('Booking failed');
+//     }
+// };
+
+
 const handleBooking = async () => {
-    if (!user) {
-        alert('You need to be logged in to book a room.');
-        return;
-    }
+  if (!user) {
+    alert('You need to be logged in to book a room.');
+    return;
+  }
 
-    dispatch(setAmount(selectedRoom.price));
-    dispatch(setCheckInDate(checkInDate));
-    dispatch(setCheckOutDate(checkOutDate));
-    dispatch(setGuests(guests));
+  // Check if the room is already booked by this user
+  const bookingsCollection = collection(db, 'bookings');
+  const bookingQuery = await getDocs(bookingsCollection);
+  const existingBooking = bookingQuery.docs.find(doc => {
+    const bookingData = doc.data();
+    return bookingData.userId === user.uid && bookingData.id === selectedRoom.id;
+  });
 
-    const { error, paymentMethod } = await stripe.createPaymentMethod({
-        type: 'card',
-        card: elements.getElement(CardElement),
+  if (existingBooking) {
+    alert('You have already booked this room. Please check your bookings.');
+    return;
+  }
+
+  // Dispatch necessary details to Redux
+  dispatch(setAmount(selectedRoom.price));
+  dispatch(setCheckInDate(checkInDate));
+  dispatch(setCheckOutDate(checkOutDate));
+  dispatch(setGuests(guests));
+
+  // Create payment method with Stripe
+  const { error, paymentMethod } = await stripe.createPaymentMethod({
+    type: 'card',
+    card: elements.getElement(CardElement),
+  });
+
+  if (error) {
+    console.error('Error creating payment method:', error);
+    alert('Payment failed');
+    return;
+  }
+
+  try {
+    const docRef = doc(db, 'bookings', `${selectedRoom.id}-${user.uid}`);
+    await setDoc(docRef, {
+      ...selectedRoom,
+      userId: user.uid,
+      checkInDate,
+      checkOutDate,
+      guests,
+      amount: selectedRoom.price,
+      bookedAt: new Date(),
+      paymentMethodId: paymentMethod.id,
+      guestInfo,
+      status: 'pending' 
     });
 
-    if (error) {
-        console.error('Error creating payment method:', error);
-        alert('Payment failed');
-        return;
+    // Dispatch booking to Redux store with status
+    dispatch(addBooking({
+      ...selectedRoom,
+      userId: user.uid,
+      checkInDate,
+      checkOutDate,
+      guests,
+      amount: selectedRoom.price,
+      guestInfo,
+      status: 'pending' 
+    }));
+
+    // Set the booking ID in Redux
+    dispatch(setCurrentBookingId(docRef.id));
+
+    // Retrieve booking details from Firestore and set confirmation details
+    const bookingSnapshot = await getDoc(docRef);
+    setConfirmationDetails(bookingSnapshot.data());
+
+    // Open confirmation modal and close booking form
+    setOpenConfirmation(true);
+    handleClose();
+
+    // Send confirmation email using Nodemailer (via server endpoint)
+    const serverUrl = 'http://localhost:3000'; 
+    await axios.post(`${serverUrl}/api/send-confirmation-email`, {
+      to: guestInfo.email,
+      subject: `Booking Confirmation for ${selectedRoom.type} Room`,
+      text: `Dear ${guestInfo.name},\n\nYour booking for ${selectedRoom.type} from ${checkInDate} to ${checkOutDate} has been confirmed. Room Price: R${selectedRoom.price} per night.\n\nThank you for booking with us!`
+    });
+
+    alert('Booking confirmed! A confirmation email has been sent to you.');
+  } catch (error) {
+    console.error('Error booking room:', error);
+    if (error.response) {
+      // The request was made and the server responded with a status code
+      // that falls out of the range of 2xx
+      console.error('Server responded with error:', error.response.data);
+      alert(`Booking failed: ${error.response.data}`);
+    } else if (error.request) {
+      // The request was made but no response was received
+      console.error('No response received:', error.request);
+      alert('Booking failed: No response from server');
+    } else {
+      // Something happened in setting up the request that triggered an Error
+      console.error('Error setting up request:', error.message);
+      alert(`Booking failed: ${error.message}`);
     }
-
-    try {
-        const docRef = doc(db, 'bookings', `${selectedRoom.id}-${user.uid}`);
-        await setDoc(docRef, {
-            ...selectedRoom,
-            userId: user.uid,
-            checkInDate,
-            checkOutDate,
-            guests,
-            amount: selectedRoom.price,
-            bookedAt: new Date(),
-            paymentMethodId: paymentMethod.id,
-            guestInfo
-        });
-
-        dispatch(addBooking({
-            ...selectedRoom,
-            userId: user.uid,
-            checkInDate,
-            checkOutDate,
-            guests,
-            amount: selectedRoom.price,
-            guestInfo
-        }));
-
-        dispatch(setCurrentBookingId(docRef.id));
-
-        const bookingSnapshot = await getDoc(docRef);
-        setConfirmationDetails(bookingSnapshot.data());
-
-        setOpenConfirmation(true);
-        handleClose();
-
-        // Notify user via Formspree
-        await axios.post('https://formspree.io/f/meojwldj', {
-            name: guestInfo.name,
-            email: guestInfo.email,
-            subject: `Booking Confirmation for ${selectedRoom.type} Room`,
-            message: `Your booking for ${selectedRoom.type} from ${checkInDate} to ${checkOutDate} has been confirmed. Room Price: R${selectedRoom.price} per night.\n\nThank you for booking with us!`
-        }, {
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        });
-
-        alert('Booking confirmed! A confirmation email has been sent to you.');
-    } catch (error) {
-        console.error('Error booking room:', error);
-        alert('Booking failed');
-    }
+  }
 };
-
 
   const handleGuestInfoChange = (e) => {
     setGuestInfo({ ...guestInfo, [e.target.name]: e.target.value });
@@ -284,14 +463,14 @@ const handleBooking = async () => {
           onChange={handleSearch}
           sx={{ marginBottom: '20px', width: '80%', maxWidth: '600px' }}
         />
-        {/* <Box sx={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+        <Box sx={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
           <Button onClick={() => handleFilter('all')} variant="contained" sx={{ background: '#6a0dad' }}>All Rooms</Button>
           <Button onClick={() => handleFilter('standard')} variant="contained" sx={{ background: '#6a0dad' }}>Standard</Button>
           <Button onClick={() => handleFilter('suite')} variant="contained" sx={{ background: '#6a0dad' }}>Suite</Button>
           <Button onClick={() => handleFilter('double')} variant="contained" sx={{ background: '#6a0dad' }}>Double</Button>
           <Button onClick={() => handleFilter('queen')} variant="contained" sx={{ background: '#6a0dad' }}>Queen</Button>
           <Button onClick={() => handleFilter('king')} variant="contained" sx={{ background: '#6a0dad' }}>King</Button>
-        </Box> */}
+        </Box>
       </Box>
      {/* Card container */}
 
