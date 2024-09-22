@@ -2,7 +2,7 @@ const express = require('express');
 const nodemailer = require('nodemailer');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-
+require('dotenv').config(); // Load environment variables
 
 const app = express();
 app.use(cors());
@@ -12,14 +12,15 @@ app.use(bodyParser.json());
 let transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
   port: 587,
-  secure: false, // Use TLS
+  secure: false, // Use TLS for port 587
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
   },
   tls: {
     rejectUnauthorized: false
-  }
+  },
+  debug: true, // Add debug flag to see detailed logs
 });
 
 // Verify the connection configuration
@@ -36,10 +37,11 @@ app.post('/api/send-confirmation-email', async (req, res) => {
 
   try {
     let info = await transporter.sendMail({
-      from: `"Eezy Living" <${process.env.EMAIL_USER}>`, 
+      from: `"Eezy Living" <${process.env.EMAIL_USER}>`,
       to: to,
       subject: subject,
-      text: text,
+      text: text, 
+      html: `<p>${text}</p>` // Send as HTML
     });
 
     console.log("Message sent: %s", info.messageId);

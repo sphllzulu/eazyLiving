@@ -111,7 +111,7 @@ const Profile = () => {
   };
 
   return (
-    <Container maxWidth="md" sx={{ bgcolor: '#f3f4f6', py: 6 }}>
+    <Container maxWidth="md" sx={{ bgcolor: '#f3f4f6', py: 3 }}>
       <ButtonAppBar />
       <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
         <motion.div animate={{ scale: [1, 1.05, 1] }} transition={{ duration: 0.5 }}>

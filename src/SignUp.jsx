@@ -44,15 +44,15 @@ const SignUp = () => {
 
   return (
     <Container
-      maxWidth="md"
+      maxWidth={false}
       sx={{
+        height: "100vh", // Full viewport height
+        width: "100vw",  // Full viewport width
         display: "flex",
-        justifyContent: "space-between",
+        justifyContent: "center",
         alignItems: "center",
         padding: "20px",
-        backgroundColor: "#fff",
-        borderRadius: "10px",
-        boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
+        backgroundColor: "#f5f5f5",
         flexDirection: { xs: "column", md: "row" },
       }}
     >
@@ -63,9 +63,9 @@ const SignUp = () => {
           backgroundImage: 'url("hotela.jpg")',
           backgroundSize: "cover",
           backgroundPosition: "center",
-          height: { xs: "200px", md: "510px" },
+          height: { xs: "200px", md: "100%" }, // Full height for larger screens
           width: "100%",
-          borderRadius: '10px 0 0 10px',
+          borderRadius: { md: "10px 0 0 10px", xs: "10px" },
         }}
       />
 
@@ -73,9 +73,12 @@ const SignUp = () => {
       <Box
         sx={{
           flex: 1,
-          padding: "0 20px",
+          padding: "20px",
           position: "relative",
-          width: { xs: "100%", md: "auto" },
+          backgroundColor: "#fff",
+          borderRadius: { md: "0 10px 10px 0", xs: "10px" },
+          boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
+          maxWidth: { xs: "100%", md: "400px" },
         }}
       >
         {/* Close Icon */}
@@ -131,7 +134,7 @@ const SignUp = () => {
           }}
         />
 
-        <Box sx={{ position: 'relative', width: '100%' }}>
+        <Box sx={{ position: "relative", width: "100%" }}>
           <Button
             variant="contained"
             fullWidth
