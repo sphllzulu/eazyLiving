@@ -42,8 +42,8 @@ const SignIn = () => {
       <Container
         maxWidth={false}
         sx={{
-          height: "100vh", // Full viewport height
-          width: "100vw", // Full viewport width
+          height: "100vh", 
+          width: "100vw", 
           display: "flex",
           flexDirection: isMobile ? "column" : "row",
           justifyContent: "center",
@@ -60,7 +60,7 @@ const SignIn = () => {
               backgroundImage: 'url("hotel.jpg")',
               backgroundSize: "cover",
               backgroundPosition: "center",
-              height: "100%",
+              height: "96%",
               borderRadius: "10px 0 0 10px",
             }}
           />

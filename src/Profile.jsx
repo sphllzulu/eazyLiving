@@ -111,7 +111,7 @@ const Profile = () => {
   };
 
   return (
-    <Container maxWidth="md" sx={{ bgcolor: '#f3f4f6', py: 3 }}>
+    <Container maxWidth="md" sx={{ bgcolor: '#f3f4f6', py: 2 }}>
       <ButtonAppBar />
       <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
         <motion.div animate={{ scale: [1, 1.05, 1] }} transition={{ duration: 0.5 }}>
@@ -151,7 +151,7 @@ const Profile = () => {
         {user?.email}
       </Typography>
 
-      <Typography variant="h5" align="left" sx={{ mt: 4, color: '#6A1B9A', fontWeight: 600 }}>
+      <Typography variant="h5" align="left" sx={{ mt: 4, color: 'black', fontWeight: 600 }}>
         Favorites
       </Typography>
       <Grid container spacing={3}>
@@ -173,7 +173,7 @@ const Profile = () => {
         ))}
       </Grid>
 
-      <Typography variant="h5" align="left" sx={{ mt: 4, color: '#6A1B9A', fontWeight: 600 }}>
+      <Typography variant="h5" align="left" sx={{ mt: 4, color: 'black', fontWeight: 600 }}>
         Your Bookings
       </Typography>
       <Grid container spacing={3}>
@@ -211,7 +211,7 @@ const Profile = () => {
       </Dialog>
 
       <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-        <Button variant="contained" color="error" startIcon={<LogoutIcon />} onClick={handleLogout}>
+        <Button variant="contained" color="error" sx={{backgroundColor:'black'}} startIcon={<LogoutIcon />} onClick={handleLogout}>
           Log Out
         </Button>
       </Box>

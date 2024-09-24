@@ -322,21 +322,20 @@
 // export default UsersList;
 
 
-
 import React, { useState, useEffect } from 'react';
 import { Box, Typography, Grid, Card, CardContent, TextField, Button, Rating, IconButton } from '@mui/material';
-import { collection, addDoc, getDocs, updateDoc, doc } from 'firebase/firestore';
-import { db, auth } from './firebase'; // Import Firebase authentication and Firestore
-import { onAuthStateChanged } from 'firebase/auth'; // Firebase auth function
+import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc } from 'firebase/firestore'; // Import deleteDoc
+import { db, auth } from './firebase';
+import { onAuthStateChanged } from 'firebase/auth';
 import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete'; // Import delete icon
 
 const UsersList = () => {
-  const [users, setUsers] = useState([]);
   const [reviews, setReviews] = useState([]);
   const [reviewText, setReviewText] = useState('');
   const [rating, setRating] = useState(0);
-  const [currentUser, setCurrentUser] = useState(null); // Track logged-in user
-  const [editReviewId, setEditReviewId] = useState(null); // Track the ID of the review being edited
+  const [currentUser, setCurrentUser] = useState(null);
+  const [editReviewId, setEditReviewId] = useState(null);
 
   // Monitor authentication state
   useEffect(() => {
@@ -351,24 +350,21 @@ const UsersList = () => {
     return () => unsubscribe();
   }, []);
 
-  // Fetch reviews data from Firestore
+  // Fetch reviews from Firestore
   useEffect(() => {
     const fetchReviews = async () => {
       try {
         const reviewsCollection = collection(db, 'reviews');
         const reviewSnapshot = await getDocs(reviewsCollection);
-
         const reviewData = reviewSnapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
         }));
-
         setReviews(reviewData);
       } catch (error) {
         console.error('Error fetching reviews:', error);
       }
     };
-
     fetchReviews();
   }, []);
 
@@ -378,7 +374,7 @@ const UsersList = () => {
       alert('Please fill out the review and rating before submitting.');
       return;
     }
-  
+
     try {
       if (editReviewId) {
         // Edit an existing review
@@ -388,8 +384,7 @@ const UsersList = () => {
           rating,
           timestamp: new Date().toISOString(),
         });
-  
-        // Update the review in the local state
+
         setReviews((prevReviews) =>
           prevReviews.map((review) =>
             review.id === editReviewId
@@ -397,8 +392,7 @@ const UsersList = () => {
               : review
           )
         );
-  
-        setEditReviewId(null); // Clear the edit state
+        setEditReviewId(null);
       } else {
         // Submit a new review
         const newReview = {
@@ -407,26 +401,21 @@ const UsersList = () => {
           rating,
           timestamp: new Date().toISOString(),
         };
-  
-        // Firestore call to add a new review
+
         const docRef = await addDoc(collection(db, 'reviews'), newReview);
-  
-        // Update local state with the new review
         setReviews((prevReviews) => [
           ...prevReviews,
           { ...newReview, id: docRef.id },
         ]);
       }
-  
-      // Clear the form after submission
+
       setReviewText('');
       setRating(0);
     } catch (error) {
       console.error('Error submitting review:', error);
-      alert(`Failed to submit review: ${error.message}`); // Handle error by alerting the user
+      alert(`Failed to submit review: ${error.message}`);
     }
   };
-  
 
   // Handle editing a review (populate the form)
   const handleEditReview = (reviewId, reviewText, rating) => {
@@ -435,15 +424,44 @@ const UsersList = () => {
     setRating(rating);
   };
 
+  // Handle deleting a review
+  const handleDeleteReview = async (reviewId) => {
+    const confirmDelete = window.confirm('Are you sure you want to delete this review?');
+    if (!confirmDelete) return;
+
+    try {
+      const reviewDocRef = doc(db, 'reviews', reviewId);
+      await deleteDoc(reviewDocRef);
+
+      // Remove the deleted review from the local state
+      setReviews((prevReviews) => prevReviews.filter((review) => review.id !== reviewId));
+    } catch (error) {
+      console.error('Error deleting review:', error);
+      alert(`Failed to delete review: ${error.message}`);
+    }
+  };
+
   return (
-    <Box p={3}>
+    <Box
+      p={3}
+      sx={{
+        backgroundColor: 'white',
+        borderRadius: '8px',
+        animation: 'fadeIn 1.5s ease-out',
+        '@keyframes fadeIn': {
+          from: { opacity: 0 },
+          to: { opacity: 1 },
+        },
+        
+        
+      }}
+    >
       {/* Review Form */}
       <Box mt={5}>
-        <Typography variant="h5">
+        <Typography variant="h5" sx={{ color: '#333' }}>
           {editReviewId ? 'Edit Your Review' : 'Leave a Review'}
         </Typography>
 
-        {/* Review Text Input */}
         <TextField
           label="Your Review"
           fullWidth
@@ -451,12 +469,17 @@ const UsersList = () => {
           rows={4}
           value={reviewText}
           onChange={(e) => setReviewText(e.target.value)}
-          sx={{ mt: 2 }}
+          sx={{
+            mt: 2,
+            backgroundColor: 'rgba(255, 255, 255, 0.8)',
+            borderRadius: '4px',
+          }}
         />
 
-        {/* Rating Input */}
         <Box mt={2}>
-          <Typography component="legend">Rate the Hotel</Typography>
+          <Typography component="legend" sx={{ color: '#333' }}>
+            Rate the Hotel
+          </Typography>
           <Rating
             name="hotel-rating"
             value={rating}
@@ -464,11 +487,16 @@ const UsersList = () => {
           />
         </Box>
 
-        {/* Submit Button */}
         <Button
           variant="contained"
-          color="primary"
-          sx={{ mt: 2, background: 'purple' }}
+          sx={{
+            mt: 2,
+            backgroundColor: '#6A0DAD',
+            color: '#fff',
+            '&:hover': {
+              backgroundColor: '#4B0082',
+            },
+          }}
           onClick={handleSubmitReview}
         >
           {editReviewId ? 'Update Review' : 'Submit Review'}
@@ -477,31 +505,57 @@ const UsersList = () => {
 
       {/* Display Reviews */}
       <Box mt={5}>
-        <Typography variant="h5">Reviews</Typography>
+        <Typography variant="h5" sx={{ color: '#333' }}>
+          Reviews
+        </Typography>
         <Grid container spacing={2}>
           {reviews.map((review) => (
             <Grid item xs={12} key={review.id}>
-              <Card>
+              <Card
+                sx={{
+                  backgroundColor: '#F5F5DC',
+                  border: '1px solid #D4AF37',
+                  borderRadius: '12px',
+                  transition: 'transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out',
+                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+                  '&:hover': {
+                    transform: 'scale(1.05)',
+                    boxShadow: '0 6px 16px rgba(0, 0, 0, 0.2)',
+                  },
+                }}
+              >
                 <CardContent>
-                  <Typography variant="body2">
+                  <Typography variant="body2" sx={{ color: '#333' }}>
                     <strong>User:</strong> {review.userId}
                   </Typography>
-                  <Typography variant="body2">
+                  <Typography variant="body2" sx={{ color: '#333' }}>
                     <strong>Rating:</strong> {review.rating}/5
                   </Typography>
-                  <Typography variant="body2">{review.reviewText}</Typography>
+                  <Typography variant="body2" sx={{ color: '#333' }}>
+                    {review.reviewText}
+                  </Typography>
                   <Typography variant="caption" color="textSecondary">
                     {new Date(review.timestamp).toLocaleString()}
                   </Typography>
 
-                  {/* Show edit button if the current user is the review author */}
+                  {/* Show edit and delete buttons if the current user is the review author */}
                   {currentUser?.email === review.userId && (
-                    <IconButton
-                      aria-label="edit"
-                      onClick={() => handleEditReview(review.id, review.reviewText, review.rating)}
-                    >
-                      <EditIcon />
-                    </IconButton>
+                    <Box display="flex" justifyContent="flex-end" mt={2}>
+                      <IconButton
+                        aria-label="edit"
+                        onClick={() => handleEditReview(review.id, review.reviewText, review.rating)}
+                        sx={{ marginRight: 1 }}
+                      >
+                        <EditIcon />
+                      </IconButton>
+                      <IconButton
+                        aria-label="delete"
+                        onClick={() => handleDeleteReview(review.id)}
+                        sx={{ color: 'black' }}
+                      >
+                        <DeleteIcon />
+                      </IconButton>
+                    </Box>
                   )}
                 </CardContent>
               </Card>

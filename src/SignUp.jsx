@@ -63,7 +63,7 @@ const SignUp = () => {
           backgroundImage: 'url("hotela.jpg")',
           backgroundSize: "cover",
           backgroundPosition: "center",
-          height: { xs: "200px", md: "100%" }, // Full height for larger screens
+          height: { xs: "200px", md: "93%" },
           width: "100%",
           borderRadius: { md: "10px 0 0 10px", xs: "10px" },
         }}

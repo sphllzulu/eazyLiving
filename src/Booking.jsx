@@ -340,12 +340,30 @@ const handleBooking = async () => {
   return (
     <div>
       <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', margin: '40px 0' }}>
-        <TextField
-          variant="outlined"
-          placeholder="Search for rooms..."
-          onChange={handleSearch}
-          sx={{ marginBottom: '20px', width: '80%', maxWidth: '600px' }}
-        />
+      <TextField
+  variant="outlined"
+  placeholder="Search for rooms..."
+  onChange={handleSearch}
+  sx={{
+    marginBottom: '20px',
+    width: '80%',
+    maxWidth: '600px',
+    backgroundColor: 'rgba(211, 211, 211, 0.5)', // light grey with opacity
+    borderRadius: '12px',
+    '& .MuiOutlinedInput-root': {
+      '& fieldset': {
+        border: 'none', // remove the default border
+      },
+    },
+    '& input': {
+      padding: '10px 15px', // custom padding inside the text field
+      color: '#333', // text color
+    },
+    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', // subtle shadow
+    transition: 'all 0.3s ease-in-out', // smooth transition effect
+  }}
+/>
+
         
       </Box>
      {/* Card container */}
