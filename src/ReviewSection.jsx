@@ -469,6 +469,7 @@ const UsersList = () => {
           rows={4}
           value={reviewText}
           onChange={(e) => setReviewText(e.target.value)}
+          
           sx={{
             mt: 2,
             backgroundColor: 'rgba(255, 255, 255, 0.8)',
@@ -513,15 +514,12 @@ const UsersList = () => {
             <Grid item xs={12} key={review.id}>
               <Card
                 sx={{
-                  backgroundColor: '#F5F5DC',
-                  border: '1px solid #D4AF37',
+                  backgroundColor: '#FFF',
+                  border: '1px solid purple',
                   borderRadius: '12px',
-                  transition: 'transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out',
+                  
                   boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-                  '&:hover': {
-                    transform: 'scale(1.05)',
-                    boxShadow: '0 6px 16px rgba(0, 0, 0, 0.2)',
-                  },
+                  
                 }}
               >
                 <CardContent>

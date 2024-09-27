@@ -11,7 +11,7 @@ const Container = styled(Box)(({ theme, height }) => ({
 
 const CarouselImage = styled('img')(({ fadeIn }) => ({
   width: '100%',
-  height: '100%',
+  height: '100vh',
   objectFit: 'cover',
   opacity: fadeIn ? 1 : 0,
   transition: 'opacity 1s ease-in-out',

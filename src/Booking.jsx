@@ -368,8 +368,8 @@ const handleBooking = async () => {
       </Box>
      {/* Card container */}
 
-      <Container>
-      <Grid container spacing={2}>
+      
+      <Grid container spacing={2} sx={{padding:'20px'}}>
         {filteredRooms.map((room) => (
           <Grid item xs={12} sm={6} md={4} lg={3} key={room.id}>
             <Card
@@ -404,8 +404,8 @@ const handleBooking = async () => {
                   <IconButton onClick={() => handleShare(room)} sx={{ color: 'black' }}>
                     <ShareIcon />
                   </IconButton>
-                  <IconButton>
-                  <MdVisibility onClick={() => handleOpen(room)} sx={{ color: 'black' }}/>
+                  <IconButton onClick={() => handleOpen(room)} sx={{ color: 'black' }}  aria-label="View room details"  aria-hidden="false">
+                  <MdVisibility />
                   </IconButton>
                 </Box>
               </CardContent>
@@ -413,7 +413,7 @@ const handleBooking = async () => {
           </Grid>
         ))}
       </Grid>
-    </Container>
+    
 
     {/* View more dialog */}
     <Dialog
