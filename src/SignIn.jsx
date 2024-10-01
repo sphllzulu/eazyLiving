@@ -8,6 +8,7 @@ import {
   IconButton,
   useTheme,
   useMediaQuery,
+  CircularProgress, // Add CircularProgress for the loader
 } from "@mui/material";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
@@ -19,12 +20,14 @@ const SignIn = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false); // Loader state
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   const handleSignIn = async () => {
+    setLoading(true); // Start loading
     try {
       const resultAction = await dispatch(loginUser({ email, password }));
       if (loginUser.fulfilled.match(resultAction)) {
@@ -34,6 +37,8 @@ const SignIn = () => {
       }
     } catch (err) {
       setError(err.message || "Failed to sign in");
+    } finally {
+      setLoading(false); // Stop loading
     }
   };
 
@@ -42,8 +47,8 @@ const SignIn = () => {
       <Container
         maxWidth={false}
         sx={{
-          height: "100vh", 
-          width: "100vw", 
+          height: "100vh",
+          width: "100vw",
           display: "flex",
           flexDirection: isMobile ? "column" : "row",
           justifyContent: "center",
@@ -130,6 +135,7 @@ const SignIn = () => {
             }}
           />
 
+          {/* Button with Loader */}
           <Button
             variant="contained"
             fullWidth
@@ -142,8 +148,9 @@ const SignIn = () => {
               "&:hover": { backgroundColor: "#4a0072" },
             }}
             onClick={handleSignIn}
+            disabled={loading} // Disable button while loading
           >
-            Log In
+            {loading ? <CircularProgress size={24} sx={{ color: "#fff" }} /> : "Log In"}
           </Button>
 
           <Typography align="center" sx={{ margin: "10px 0" }}>

@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import {
-  Button, TextField, Card, CardContent, CardMedia, Typography, Grid, IconButton, Box, Dialog, DialogTitle, DialogContent, Container, InputLabel, MenuItem, Select
+  Button, TextField, Card, CardContent, CardMedia, Typography, Grid, IconButton, Box, Dialog, DialogTitle, DialogContent, Container, InputLabel,CircularProgress, MenuItem, Select
 } from '@mui/material';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import VisibilityIcon from '@mui/icons-material/Visibility';
@@ -40,6 +40,7 @@ const BookingComponent = () => {
   const [checkInDate, setCheckInDateLocal] = useState('');
   const [checkOutDate, setCheckOutDateLocal] = useState('');
   const [guests, setGuestsLocal] = useState(1);
+  const [loading, setLoading] = useState(false); 
   const [guestInfo, setGuestInfo] = useState({ name: '', surname: '', email: '', phone: '' });
   const [openConfirmation, setOpenConfirmation] = useState(false);
   const [confirmationDetails, setConfirmationDetails] = useState(null);
@@ -156,7 +157,8 @@ const handleShare = (room) => {
     title: `${room.type} Room at Eezy Living`,
     text: `
       Check out this amazing ${room.type} room at Eezy Living!
-      
+
+    
       Price: R${room.price} per night
       Description: ${room.description}
       Amenities: ${room.amenities?.join(', ') || 'No amenities listed'}
@@ -180,46 +182,7 @@ const handleShare = (room) => {
 };
 
 
-
-// const handleShare = (room) => {
-//   // Prepare the share data
-//   const shareData = {
-//     title: `${room.type} Room`,
-//     text: `Check out this ${room.type} room priced at R${room.price} per night!`,
-//     url: window.location.href // URL of the current page
-//   };
-
-//   // Check if the browser supports the Share API
-//   if (navigator.share) {
-//     navigator.share(shareData)
-//       .then(() => {
-//         console.log('Successfully shared');
-//       })
-//       .catch((error) => {
-//         console.error('Error sharing:', error);
-//         alert('Failed to share. Please try copying the link manually.');
-//       });
-//   } else {
-//     // Fallback: Copy the URL to clipboard
-//     navigator.clipboard.writeText(shareData.url)
-//       .then(() => {
-//         alert('Link copied to clipboard!');
-//       })
-//       .catch((error) => {
-//         console.error('Failed to copy the link:', error);
-//         alert('Failed to copy the link. Please copy it manually.');
-//       });
-//   }
-// };
-
-
-
-
- 
-
-
-
-
+// logic for booking a room
 const handleBooking = async () => {
   if (!user) {
     alert('You need to be logged in to book a room.');
@@ -258,6 +221,8 @@ const handleBooking = async () => {
   }
 
   try {
+
+    setLoading(true); 
     const docRef = doc(db, 'bookings', `${selectedRoom.id}-${user.uid}`);
     await setDoc(docRef, {
       ...selectedRoom,
@@ -303,7 +268,7 @@ const handleBooking = async () => {
       text: `Dear ${guestInfo.name},\n\n This is to confirm that payment has been recieved for the ${selectedRoom.type} room from ${checkInDate} to ${checkOutDate}.The room has been reserved for you and your guest(s). Room Price: R${totalAmount} per night. Further communication will be sent to you shortly. \n\nThank you for booking with us! \n\n Regards \n Eezy Living`
     });
 
-    alert('Booking confirmed! A confirmation email has been sent to you.');
+    alert('Room reserved! confirmation will be sent to you shortly');
   } catch (error) {
     console.error('Error booking room:', error);
     if (error.response) {
@@ -320,6 +285,8 @@ const handleBooking = async () => {
       console.error('Error setting up request:', error.message);
       alert(`Booking failed: ${error.message}`);
     }
+  }   finally {
+    setLoading(false); // Set loading to false after booking process is completed
   }
 };
 
@@ -628,7 +595,7 @@ const handleBooking = async () => {
             '&:hover': { backgroundColor: '#6a1b9a' },
           }}
         >
-          Book Now
+          {loading ? <CircularProgress size={24} /> : 'Book Now'} {/* Show loader when loading */}
         </Button>
       </Box>
     </Box>

@@ -172,7 +172,7 @@ const Profile = () => {
           </Grid>
         ))}
       </Grid>
-
+{/* below is where user will see a list of cards with their bookings */}
       <Typography variant="h5" align="left" sx={{ mt: 4, color: 'black', fontWeight: 600 }}>
         Your Bookings
       </Typography>
@@ -194,10 +194,21 @@ const Profile = () => {
         ))}
       </Grid>
 
-      <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
+{/* thie dialog will appear when user clicks on the card to view their booking */}
+      <Dialog open={openDialog} onClose={() => setOpenDialog(false)}  sx={{border:'2px solid purple'}}>
         <DialogTitle>Booking Details</DialogTitle>
         {selectedBooking && (
           <DialogContent>
+            <img
+        src={selectedBooking?.image || '/default-room.jpg'} // Use room image or a default one
+        alt={selectedBooking?.type}
+        style={{
+          maxWidth: '100%',
+          height: 'auto',
+          borderRadius: '10px',
+          border: '2px solid purple', // Purple border for the image
+        }}
+      />
             <Typography>Room Type: {selectedBooking.type}</Typography>
             <Typography>Price: R{selectedBooking.price}</Typography>
             <Typography>Check-in: {new Date(selectedBooking.checkInDate).toLocaleDateString()}</Typography>
@@ -206,7 +217,7 @@ const Profile = () => {
           </DialogContent>
         )}
         <DialogActions>
-          <Button onClick={() => setOpenDialog(false)} color="primary">Close</Button>
+          <Button onClick={() => setOpenDialog(false)} color="purple">Close</Button>
         </DialogActions>
       </Dialog>
 
