@@ -14,6 +14,7 @@ import SignIn from "./SignIn";
 import PaymentComponent from './PaymentComponent';
 import TermsOfUse from './TermsOfUse'
 import PrivacyTerms from './PrivacyTerms';
+import Gallery from './Gallery';
 
 function App() {
   return (
@@ -23,6 +24,8 @@ function App() {
         <Route path="/signup" element={<SignUp />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/terms" element={<TermsOfUse />} />
+        <Route path="/gallery" element={<Gallery />} />
+        
         <Route path="/privacy" element={<PrivacyTerms />} />
         
         <Route path="/login" element={<SignIn />} />

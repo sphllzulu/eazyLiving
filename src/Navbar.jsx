@@ -39,6 +39,11 @@ export default function ButtonAppBar() {
                 Eezy Living
               </Typography>
             </Link>
+            <Link to='/gallery' style={{ textDecoration: 'none' }}>
+              <Typography variant="h6" component="div" sx={{ flexGrow: 1, color: 'black' }}>
+                Gallery
+              </Typography>
+            </Link>
             <IconButton color="inherit" onClick={handleAccountClick}>
               <AccountCircleIcon />
             </IconButton>
