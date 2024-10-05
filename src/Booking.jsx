@@ -9,7 +9,7 @@ import ShareIcon from '@mui/icons-material/Share';
 import CloseIcon from '@mui/icons-material/Close';
  import axios from 'axios'; 
 import { useDispatch, useSelector } from 'react-redux';
-import { doc, setDoc, getDoc, getDocs, collection } from "firebase/firestore";
+import { doc, setDoc, getDoc, getDocs, collection,runTransaction } from "firebase/firestore";
 import { db, auth } from "./firebase";
 import { addBooking, addFavorite, setBookings, setFavorites, setCurrentBookingId } from './BookingSlice';
 import { setCheckInDate, setCheckOutDate, setGuests, setAmount } from './paymentSlice';
@@ -22,6 +22,7 @@ import ReviewSection from './ReviewSection'
 import StarBorder from '@mui/icons-material/StarBorder';
 import UsersList from './ReviewSection';
 import { MdVisibility } from "react-icons/md";
+import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 // Define keyframes for the card animation
 const cardHoverAnimation = keyframes`
   from {
@@ -44,17 +45,20 @@ const BookingComponent = () => {
   const [guestInfo, setGuestInfo] = useState({ name: '', surname: '', email: '', phone: '' });
   const [openConfirmation, setOpenConfirmation] = useState(false);
   const [confirmationDetails, setConfirmationDetails] = useState(null);
-  const [favorites, setFavoritesState] = useState({}); // Track favorites
+  const [favoritesState, setFavoritesState] = useState({}); // Track favorites
   const [searchKeyword, setSearchKeyword] = useState(''); // State for search input
   const [totalAmount, setTotalAmount] = useState(selectedRoom?.price || 0);
-
   const dispatch = useDispatch();
   const user = useSelector((state) => state.user.user);
   const stripe = useStripe();
   const elements = useElements();
-  
+  const [userRatings, setUserRatings] = useState(0);
   
   useEffect(() => {
+
+
+    
+
     const fetchRoomsFromFirestore = async () => {
       try {
         const roomsCollection = collection(db, 'accommodation');
@@ -71,8 +75,92 @@ const BookingComponent = () => {
     fetchRoomsFromFirestore();
   }, [dispatch]);
    
+  useEffect(() => {
+    // ... (keep existing useEffect logic)
 
-  
+    // Fetch user's ratings for rooms
+    const fetchUserRatings = async () => {
+      if (user) {
+        const userRatingsDoc = await getDoc(doc(db, 'rating', user.uid));
+        if (userRatingsDoc.exists()) {
+          setUserRatings(userRatingsDoc.data());
+        }
+      }
+    };
+
+    fetchUserRatings();
+  }, [user]);
+  // for the ratings
+  const handleRating = async (roomId, newRating) => {
+    if (!user) {
+      alert('You need to be logged in to rate a room.');
+      return;
+    }
+
+    try {
+      await runTransaction(db, async (transaction) => {
+        const roomRef = doc(db, 'accommodation', roomId);
+        const userRatingsRef = doc(db, 'userRatings', user.uid);
+
+        const roomDoc = await transaction.get(roomRef);
+        const userRatingsDoc = await transaction.get(userRatingsRef);
+
+        if (!roomDoc.exists()) {
+          throw "Room document does not exist!";
+        }
+
+        const roomData = roomDoc.data();
+        const oldRatingCount = roomData.ratingCount || 0;
+        const oldRatingTotal = roomData.ratingTotal || 0;
+
+        const userRatingsData = userRatingsDoc.exists() ? userRatingsDoc.data() : {};
+        const oldUserRating = userRatingsData[roomId] || 0;
+
+        // Calculate new rating data
+        const newRatingCount = oldRatingCount + (oldUserRating === 0 ? 1 : 0);
+        const newRatingTotal = oldRatingTotal - oldUserRating + newRating;
+        const newAverageRating = newRatingTotal / newRatingCount;
+
+        // Update the room document
+        transaction.update(roomRef, {
+          ratingCount: newRatingCount,
+          ratingTotal: newRatingTotal,
+          rating: newAverageRating
+        });
+
+        // Update user's ratings document
+        transaction.set(userRatingsRef, {
+          ...userRatingsData,
+          [roomId]: newRating
+        }, { merge: true });
+      });
+
+      // Update local state
+      setUserRatings(prevRatings => ({
+        ...prevRatings,
+        [roomId]: newRating
+      }));
+
+      setFilteredRooms(prevRooms => 
+        prevRooms.map(room => 
+          room.id === roomId 
+            ? { 
+                ...room, 
+                rating: (room.ratingTotal - (userRatings[roomId] || 0) + newRating) / 
+                        (room.ratingCount + (userRatings[roomId] ? 0 : 1)),
+                ratingCount: room.ratingCount + (userRatings[roomId] ? 0 : 1),
+                ratingTotal: room.ratingTotal - (userRatings[roomId] || 0) + newRating
+              }
+            : room
+        )
+      );
+
+      alert('Rating updated successfully!');
+    } catch (error) {
+      console.error("Error updating rating:", error);
+      alert('Failed to update rating. Please try again.');
+    }
+  };
   
 
 // function to handle the search input
@@ -113,26 +201,62 @@ const BookingComponent = () => {
       alert('You need to be logged in to add to favorites.');
       return;
     }
-
+  
     try {
       const docRef = doc(db, 'favorites', `${room.id}-${user.uid}`);
-      await setDoc(docRef, {
-        ...room,
-        userId: user.uid,
-        addedAt: new Date(),
-      });
-      dispatch(addFavorite(room));
-      setFavoritesState(prev => ({ ...prev, [room.id]: true })); // Update state
-      alert('Room added to favorites!');
+  
+      if (favoritesState[room.id]) {
+        // If the room is already in favorites, remove it
+        await deleteDoc(docRef); // Remove from Firestore
+        dispatch(removeFavorite(room)); // Update Redux state
+        (prev => ({ ...prev, [room.id]: false })); // Update state to false
+        alert('Room removed from favorites.');
+      } else {
+        // Add room to favorites
+        await setDoc(docRef, {
+          ...room,
+          userId: user.uid,
+          addedAt: new Date(),
+        });
+        dispatch(addFavorite(room)); // Update Redux state
+        setFavoritesState(prev => ({ ...prev, [room.id]: true })); // Update state to true
+        alert('Room added to favorites!');
+      }
     } catch (error) {
-      console.error("Error adding to favorites: ", error);
+      console.error('Error handling favorites: ', error);
     }
   };
+  
+
+
+  // const handleAddToFavorites = async (room) => {
+  //   if (!user) {
+  //     alert('You need to be logged in to add to favorites.');
+  //     return;
+  //   }
+
+  //   try {
+  //     const docRef = doc(db, 'favorites', `${room.id}-${user.uid}`);
+  //     await setDoc(docRef, {
+  //       ...room,
+  //       userId: user.uid,
+  //       addedAt: new Date(),
+  //     });
+  //     dispatch(addFavorite(room));
+  //     setFavoritesState(prev => ({ ...prev, [room.id]: true })); // Update state
+  //     alert('Room added to favorites!');
+  //   } catch (error) {
+  //     console.error("Error adding to favorites: ", error);
+  //   }
+  // };
 
 
   
 
 // Fallback function for browsers that don't support the Share API
+
+
+
 const fallbackShare = (shareData) => {
   const fallbackText = `${shareData.title}\n\n${shareData.text}\n\nCheck it out here: ${shareData.url}`;
   
@@ -336,51 +460,63 @@ const handleBooking = async () => {
      {/* Card container */}
 
       
-      <Grid container spacing={2} sx={{padding:'20px'}}>
-        {filteredRooms.map((room) => (
-          <Grid item xs={12} sm={6} md={4} lg={3} key={room.id}>
-            <Card
-              sx={{
-                '&:hover': {
-                  animation: `${cardHoverAnimation} 0.3s ease-in-out`,
-                  boxShadow: 3
-                },
-                transition: 'all 0.3s ease-in-out',
-                backgroundColor: '#fff', // White background
-                border: '2px solid purple', // Purple border
-                borderRadius: '10px'
-              }}
+     <Grid container spacing={2} sx={{ padding: '20px' }}>
+  {filteredRooms.map((room) => (
+    <Grid item xs={12} sm={6} md={4} lg={3} key={room.id}>
+      <Card
+        sx={{
+          '&:hover': {
+            animation: `${cardHoverAnimation} 0.3s ease-in-out`,
+            boxShadow: 3,
+          },
+          transition: 'all 0.3s ease-in-out',
+          backgroundColor: '#fff',
+          border: '2px solid purple',
+          borderRadius: '10px',
+        }}
+      >
+        <CardMedia component="img" height="140" image={room.image} alt={room.type} />
+        <CardContent>
+          <Typography variant="h5" component="div">
+            {room.type}
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            R{room.price} per night
+          </Typography>
+          <Box>
+          {[1, 2, 3, 4, 5].map((star) => (
+            <IconButton
+              key={star}
+              onClick={() => handleRating(room.id, star)}
+              color={star <= (userRatings[room.id] || room.rating) ? "primary" : "default"}
             >
-              <CardMedia component="img" height="140" image={room.image} alt={room.type} />
-              <CardContent>
-                <Typography variant="h5" component="div">
-                  {room.type}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  R{room.price} per night
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  {Array.from({ length: 5 }, (_, index) => (
-                    index < room.rating ? <Star key={index} sx={{ fontSize: 16 }} /> : <StarBorder key={index} sx={{ fontSize: 16 }} />
-                  ))}
-                </Typography>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', marginTop: '10px' }}>
-                  <IconButton onClick={() => handleAddToFavorites(room)} sx={{ color: 'black' }}>
-                    <FavoriteIcon />
-                  </IconButton>
-                  <IconButton onClick={() => handleShare(room)} sx={{ color: 'black' }}>
-                    <ShareIcon />
-                  </IconButton>
-                  <IconButton onClick={() => handleOpen(room)} sx={{ color: 'black' }}  aria-label="View room details"  aria-hidden="false">
-                  <MdVisibility />
-                  </IconButton>
-                </Box>
-              </CardContent>
-            </Card>
-          </Grid>
-        ))}
-      </Grid>
-    
+              {star <= (userRatings[room.id] || room.rating) ? <Star /> : <StarBorder />}
+            </IconButton>
+          ))}
+          <Typography variant="body2">
+            ({room.ratingCount || 0} ratings)
+          </Typography>
+        </Box>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', marginTop: '10px' }}>
+ 
+            <IconButton
+              onClick={() => handleAddToFavorites(room)}
+              sx={{ color: favoritesState[room.id] ? 'red' : 'black' }} 
+            >
+              {favoritesState[room.id] ? <FavoriteIcon /> : <FavoriteBorderIcon />}
+            </IconButton>
+            <IconButton onClick={() => handleShare(room)} sx={{ color: 'black' }}>
+              <ShareIcon />
+            </IconButton>
+            <IconButton onClick={() => handleOpen(room)} sx={{ color: 'black' }} aria-label="View room details" aria-hidden="false">
+              <MdVisibility />
+            </IconButton>
+          </Box>
+        </CardContent>
+      </Card>
+    </Grid>
+  ))}
+</Grid>
 
     {/* View more dialog */}
     <Dialog
@@ -388,7 +524,7 @@ const handleBooking = async () => {
   onClose={handleClose}
   PaperProps={{
     sx: {
-      backgroundColor: '#1f1f1f', // Darker gray background
+      backgroundColor: 'hotpink', 
       color: 'white', // White text
       border: '2px solid purple', // Purple border
       borderRadius: '10px',
