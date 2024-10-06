@@ -153,24 +153,7 @@ const SignIn = () => {
             {loading ? <CircularProgress size={24} sx={{ color: "#fff" }} /> : "Log In"}
           </Button>
 
-          <Typography align="center" sx={{ margin: "10px 0" }}>
-            Or Continue With
-          </Typography>
-
-          {/* Social login options */}
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "center",
-              gap: "10px",
-              marginBottom: "20px",
-            }}
-          >
-            <IconButton sx={{ color: "#DB4437" }}>
-              <GoogleIcon />
-            </IconButton>
-          </Box>
-
+          
           <Typography align="center">
             Don’t have an account?{" "}
             <Button
