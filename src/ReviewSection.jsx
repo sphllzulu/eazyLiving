@@ -712,14 +712,14 @@ const UsersList = () => {
       );
 
       setUserReplyText('');
-      setEditUserReplyId(null); // Clear edit mode
+      setEditUserReplyId(null); 
     } catch (error) {
       console.error('Error submitting user reply:', error);
       alert(`Failed to submit user reply: ${error.message}`);
     }
   };
 
-  // Handle deleting a user reply
+  // Handles deleting a user reply
   const deleteUserReply = async (reviewId) => {
     try {
       const reviewDocRef = doc(db, 'reviews', reviewId);
@@ -829,20 +829,20 @@ const UsersList = () => {
                   <Typography variant="caption" color="textSecondary">
                     {review.userReplyTimestamp ? new Date(review.userReplyTimestamp).toLocaleString() : ''}
                   </Typography>
-                  {currentUser?.email === review.userId && review.userReply && (
-                    <>
+                  {currentUser?.email === review.userId &&  (
+                    < div style={{display:'flex', justifyContent:'space-between'}}>
                       <IconButton
                         onClick={() => {
                           setEditUserReplyId(review.id);
                           setUserReplyText(review.userReply);
                         }}
                       >
-                        <EditIcon color="primary" />
+                        <EditIcon color="default" />
                       </IconButton>
                       <IconButton onClick={() => deleteUserReply(review.id)}>
-                        <DeleteIcon color="error" />
+                        <DeleteIcon color="default" />
                       </IconButton>
-                    </>
+                    </div>
                   )}
                 </>
               )}
@@ -852,7 +852,7 @@ const UsersList = () => {
           {/* Action Buttons for Editing and Deleting Reviews */}
           <Box mt={2}>
             {currentUser?.email === review.userId && (
-              <>
+              <div style={{display:'flex', justifyContent:'space-between'}}>
                 <IconButton
                   onClick={() => {
                     setEditReviewId(review.id);
@@ -860,16 +860,16 @@ const UsersList = () => {
                     setRating(review.rating);
                   }}
                 >
-                  <EditIcon color="primary" />
+                  <EditIcon color="default" />
                 </IconButton>
                 <IconButton onClick={() => deleteReview(review.id)}>
-                  <DeleteIcon color="error" />
+                  <DeleteIcon color="default" />
                 </IconButton>
-              </>
+              </div>
             )}
 
             {/* Admin reply section */}
-            {currentUser?.email === 'admin@eezylivinghotel.com' && !review.adminReply && (
+            {currentUser?.email === 'admin@example.com.com' && !review.adminReply && (
               <>
                 <TextField
                   label="Admin Reply"

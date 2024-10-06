@@ -47,13 +47,13 @@ const BookingComponent = () => {
   const [confirmationDetails, setConfirmationDetails] = useState(null);
   const [favoritesState, setFavoritesState] = useState({}); // Track favorites
   const [searchKeyword, setSearchKeyword] = useState(''); // State for search input
-  const [totalAmount, setTotalAmount] = useState(selectedRoom?.price || 0);
+  const [totalAmount, setTotalAmount] = useState( 0);
   const dispatch = useDispatch();
   const user = useSelector((state) => state.user.user);
   const stripe = useStripe();
   const elements = useElements();
   const [userRatings, setUserRatings] = useState(0);
-  
+  const [showFields, setShowFields] = useState(false);
   useEffect(() => {
 
 
@@ -229,27 +229,7 @@ const BookingComponent = () => {
   
 
 
-  // const handleAddToFavorites = async (room) => {
-  //   if (!user) {
-  //     alert('You need to be logged in to add to favorites.');
-  //     return;
-  //   }
-
-  //   try {
-  //     const docRef = doc(db, 'favorites', `${room.id}-${user.uid}`);
-  //     await setDoc(docRef, {
-  //       ...room,
-  //       userId: user.uid,
-  //       addedAt: new Date(),
-  //     });
-  //     dispatch(addFavorite(room));
-  //     setFavoritesState(prev => ({ ...prev, [room.id]: true })); // Update state
-  //     alert('Room added to favorites!');
-  //   } catch (error) {
-  //     console.error("Error adding to favorites: ", error);
-  //   }
-  // };
-
+  
 
   
 
@@ -414,6 +394,36 @@ const handleBooking = async () => {
   }
 };
 
+const handleProceedToPayment = () => {
+  setShowFields(true); // Show additional fields when clicking "Proceed to Payment"
+};
+
+const handleDateChange = () => {
+  if (checkInDate && checkOutDate && selectedRoom?.price) {
+    const checkIn = new Date(checkInDate);
+    const checkOut = new Date(checkOutDate);
+    const timeDifference = checkOut.getTime() - checkIn.getTime();
+
+    // Calculate the number of days
+    const numberOfDays = Math.ceil(timeDifference / (1000 * 60 * 60 * 24));
+
+    // Ensure at least 1 day is selected (e.g. if dates are the same)
+    const validDays = Math.max(numberOfDays, 1);
+
+    // Calculate total amount based on room price and number of days
+    const calculatedTotal = validDays * selectedRoom.price;
+
+    // Update the total amount state
+    setTotalAmount(calculatedTotal);
+  }
+};
+
+useEffect(() => {
+  handleDateChange();
+}, [checkInDate, checkOutDate, selectedRoom]);
+
+
+
   const handleGuestInfoChange = (e) => {
     setGuestInfo({ ...guestInfo, [e.target.name]: e.target.value });
   };
@@ -488,7 +498,7 @@ const handleBooking = async () => {
             <IconButton
               key={star}
               onClick={() => handleRating(room.id, star)}
-              color={star <= (userRatings[room.id] || room.rating) ? "primary" : "default"}
+              color={star <= (userRatings[room.id] || room.rating) ? "default" : "default"}
             >
               {star <= (userRatings[room.id] || room.rating) ? <Star /> : <StarBorder />}
             </IconButton>
@@ -524,11 +534,11 @@ const handleBooking = async () => {
   onClose={handleClose}
   PaperProps={{
     sx: {
-      backgroundColor: 'hotpink', 
-      color: 'white', // White text
-      border: '2px solid purple', // Purple border
+      backgroundColor: '#A8A8A8',
+      color: 'white',
+      border: '2px solid purple',
       borderRadius: '10px',
-      animation: `${dialogAnimation} 0.4s ease-out`, // Animation
+      animation: `${dialogAnimation} 0.4s ease-out`,
     },
   }}
 >
@@ -544,56 +554,70 @@ const handleBooking = async () => {
       <CloseIcon />
     </IconButton>
   </DialogTitle>
-  
+
   <DialogContent sx={{ padding: '16px' }}>
     {/* Room Image */}
     <Box sx={{ marginBottom: '20px', display: 'flex', justifyContent: 'center' }}>
       <img
-        src={selectedRoom?.image || '/default-room.jpg'} // Use room image or a default one
+        src={selectedRoom?.image || '/default-room.jpg'}
         alt={selectedRoom?.type}
         style={{
           maxWidth: '100%',
           height: 'auto',
           borderRadius: '10px',
-          border: '2px solid purple', // Purple border for the image
+          border: '2px solid purple',
         }}
       />
     </Box>
 
-    <Typography variant="h6" gutterBottom>
-      Description
-    </Typography>
-    <Typography variant="body1" paragraph>
-      {selectedRoom?.description}
-    </Typography>
+    <Typography variant="h6" gutterBottom>Description</Typography>
+    <Typography variant="body1" paragraph>{selectedRoom?.description}</Typography>
 
-    <Typography variant="h6" gutterBottom>
-      Amenities
-    </Typography>
-    <Typography variant="body1" paragraph>
-      {selectedRoom?.amenities?.join(', ') || 'No amenities available'}
-    </Typography>
+    <Typography variant="h6" gutterBottom>Amenities</Typography>
+    <Typography variant="body1" paragraph>{selectedRoom?.amenities?.join(', ') || 'No amenities available'}</Typography>
 
-    <Typography variant="h6" gutterBottom>
-      Policies
-    </Typography>
-    <Typography variant="body1" paragraph>
-      {selectedRoom?.policies?.join(', ') || 'No policies available'}
-    </Typography>
+    <Typography variant="h6" gutterBottom>Policies</Typography>
+    <Typography variant="body1" paragraph>{selectedRoom?.policies?.join(', ') || 'No policies available'}</Typography>
 
-    {/* Check-In, Check-Out, and Guest Info Fields */}
-    <Box sx={{ marginTop: '20px' }}>
+    {/* Proceed to Payment Button */}
+    {!showFields && (
+      <Box sx={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={handleProceedToPayment}
+          sx={{
+            backgroundColor: 'purple',
+            '&:hover': { backgroundColor: '#6a1b9a' },
+          }}
+        >
+          Proceed to Payment
+        </Button>
+      </Box>
+    )}
+
+    {/* Hidden Fields with Slide Animation */}
+    <Box
+      sx={{
+        marginTop: '20px',
+        maxHeight: showFields ? '1000px' : '0px',
+        overflow: 'hidden',
+        transition: 'max-height 0.5s ease-in-out',
+      }}
+    >
       <InputLabel htmlFor="check-in-date" sx={{ color: 'white' }}>Check-In Date</InputLabel>
       <TextField
         id="check-in-date"
         type="date"
         value={checkInDate}
-        onChange={(e) => setCheckInDateLocal(e.target.value)}
+        onChange={(e) => {
+          setCheckInDateLocal(e.target.value);
+          handleDateChange(); // Trigger price calculation on date change
+        }}
         sx={{
           width: '100%',
           marginBottom: '10px',
           input: { color: 'white' },
-          '& .MuiInputLabel-root': { color: 'white' },
           '& .MuiOutlinedInput-root': {
             '& fieldset': { borderColor: 'purple' },
             '&:hover fieldset': { borderColor: 'purple' },
@@ -606,12 +630,14 @@ const handleBooking = async () => {
         id="check-out-date"
         type="date"
         value={checkOutDate}
-        onChange={(e) => setCheckOutDateLocal(e.target.value)}
+        onChange={(e) => {
+          setCheckOutDateLocal(e.target.value);
+          handleDateChange(); // Trigger price calculation on date change
+        }}
         sx={{
           width: '100%',
           marginBottom: '10px',
           input: { color: 'white' },
-          '& .MuiInputLabel-root': { color: 'white' },
           '& .MuiOutlinedInput-root': {
             '& fieldset': { borderColor: 'purple' },
             '&:hover fieldset': { borderColor: 'purple' },
@@ -619,43 +645,10 @@ const handleBooking = async () => {
         }}
       />
 
-      <InputLabel htmlFor="guests" sx={{ color: 'white' }}>Number of Guests</InputLabel>
-      <Select
-  id="guests"
-  value={guests}
-  onChange={(e) => {
-    const guestCount = e.target.value;
-    setGuestsLocal(guestCount);
-    
-    // Calculate the total amount
-    // Base price for the first guest, then add R500 for each additional guest
-    const additionalGuestPrice = 10;
-    const newTotal = selectedRoom.price + (guestCount > 1 ? (guestCount - 1) * additionalGuestPrice : 0);
-    setTotalAmount(newTotal);
-  }}
-  sx={{
-    width: '100%',
-    marginBottom: '10px',
-    '& .MuiSelect-icon': { color: 'white' },
-    '& .MuiOutlinedInput-root': {
-      '& fieldset': { borderColor: 'purple' },
-      '&:hover fieldset': { borderColor: 'purple' },
-    },
-  }}
->
-  {[1, 2, 3, 4, 5].map(num => (
-    <MenuItem key={num} value={num}>{num}</MenuItem>
-  ))}
-</Select>
-<Typography variant="h6" gutterBottom>
-    Total Amount: R{totalAmount}
-  </Typography>
+<Typography variant="h6" gutterBottom>Total Amount: R{totalAmount.toFixed(2)}</Typography>
 
       {/* Guest Info Fields */}
-      <Typography variant="h6" gutterBottom>
-        Guest Information
-      </Typography>
-
+      <Typography variant="h6" gutterBottom>Guest Information</Typography>
       <TextField
         label="Name"
         name="name"
@@ -664,63 +657,81 @@ const handleBooking = async () => {
         fullWidth
         sx={{
           marginBottom: '10px',
-          '& .MuiInputLabel-root': { color: 'white' },
           '& .MuiOutlinedInput-root': {
             '& fieldset': { borderColor: 'purple' },
             '&:hover fieldset': { borderColor: 'purple' },
           },
         }}
       />
-      <TextField
-        label="Surname"
-        name="surname"
-        value={guestInfo.surname}
-        onChange={handleGuestInfoChange}
-        fullWidth
-        sx={{
-          marginBottom: '10px',
-          '& .MuiInputLabel-root': { color: 'white' },
-          '& .MuiOutlinedInput-root': {
-            '& fieldset': { borderColor: 'purple' },
-            '&:hover fieldset': { borderColor: 'purple' },
-          },
-        }}
-      />
-      <TextField
-        label="Email Address"
-        name="email"
-        value={guestInfo.email}
-        onChange={handleGuestInfoChange}
-        fullWidth
-        sx={{
-          marginBottom: '10px',
-          '& .MuiInputLabel-root': { color: 'white' },
-          '& .MuiOutlinedInput-root': {
-            '& fieldset': { borderColor: 'purple' },
-            '&:hover fieldset': { borderColor: 'purple' },
-          },
-        }}
-      />
-      <TextField
-        label="Phone Number"
-        name="phone"
-        value={guestInfo.phone}
-        onChange={handleGuestInfoChange}
-        fullWidth
-        sx={{
-          marginBottom: '10px',
-          '& .MuiInputLabel-root': { color: 'white' },
-          '& .MuiOutlinedInput-root': {
-            '& fieldset': { borderColor: 'purple' },
-            '&:hover fieldset': { borderColor: 'purple' },
-          },
-        }}
-      />
+     <TextField
+              label="Surname"
+              name="surname"
+              value={guestInfo.surname}
+              onChange={handleGuestInfoChange}
+              fullWidth
+              sx={{
+                marginBottom: '10px',
+                '& .MuiInputLabel-root': { color: 'white' },
+                '& .MuiOutlinedInput-root': {
+                  '& fieldset': { borderColor: 'purple' },
+                  '&:hover fieldset': { borderColor: 'purple' },
+                },
+              }}
+            />
+            <TextField
+              label="Email Address"
+              name="email"
+              value={guestInfo.email}
+              onChange={handleGuestInfoChange}
+              fullWidth
+              sx={{
+                marginBottom: '10px',
+                '& .MuiInputLabel-root': { color: 'white' },
+                '& .MuiOutlinedInput-root': {
+                  '& fieldset': { borderColor: 'purple' },
+                  '&:hover fieldset': { borderColor: 'purple' },
+                },
+              }}
+            />
+            <TextField
+              label="Phone Number"
+              name="phone"
+              value={guestInfo.phone}
+              onChange={handleGuestInfoChange}
+              fullWidth
+              sx={{
+                marginBottom: '10px',
+                '& .MuiInputLabel-root': { color: 'white' },
+                '& .MuiOutlinedInput-root': {
+                  '& fieldset': { borderColor: 'purple' },
+                  '&:hover fieldset': { borderColor: 'purple' },
+                },
+              }}
+            />
+
+            <InputLabel htmlFor="guests" sx={{ color: 'white' }}>Number of Guests</InputLabel>
+            <Select
+              id="guests"
+              value={guests}
+              onChange={(e) => setGuests(e.target.value)}
+              sx={{
+                width: '100%',
+                marginBottom: '10px',
+                '& .MuiSelect-icon': { color: 'white' },
+                '& .MuiOutlinedInput-root': {
+                  '& fieldset': { borderColor: 'purple' },
+                  '&:hover fieldset': { borderColor: 'purple' },
+                },
+              }}
+            >
+              {[1, 2, 3, 4, 5].map(num => (
+                <MenuItem key={num} value={num}>{num}</MenuItem>
+              ))}
+            </Select>
 
       {/* Payment Section */}
       <CardElement options={{ style: { base: { fontSize: '16px', color: 'white' } } }} />
-      
-      {/* Book Now Button */}
+
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
         <Button
           variant="contained"
@@ -731,7 +742,7 @@ const handleBooking = async () => {
             '&:hover': { backgroundColor: '#6a1b9a' },
           }}
         >
-          {loading ? <CircularProgress size={24} /> : 'Book Now'} {/* Show loader when loading */}
+          {loading ? <CircularProgress size={24} /> : 'Book Now'}
         </Button>
       </Box>
     </Box>

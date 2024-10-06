@@ -8,6 +8,7 @@ import IconButton from '@mui/material/IconButton';
 import { Link } from 'react-router-dom';
 import CloseIcon from '@mui/icons-material/Close';
 import Slide from '@mui/material/Slide';
+import CollectionsIcon from '@mui/icons-material/Collections';
 
 export default function ButtonAppBar() {
   const [accountOpen, setAccountOpen] = React.useState(false);
@@ -40,9 +41,7 @@ export default function ButtonAppBar() {
               </Typography>
             </Link>
             <Link to='/gallery' style={{ textDecoration: 'none' }}>
-              <Typography variant="h6" component="div" sx={{ flexGrow: 1, color: 'black' }}>
-                Gallery
-              </Typography>
+              <CollectionsIcon sx={{  color: 'black' }}/>
             </Link>
             <IconButton color="inherit" onClick={handleAccountClick}>
               <AccountCircleIcon />

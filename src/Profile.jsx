@@ -4,9 +4,9 @@ import {
   Dialog, DialogTitle, DialogContent, DialogActions
 } from '@mui/material';
 import { useDispatch, useSelector } from 'react-redux';
-import { auth, db } from './firebase';
+import { auth, db,storage} from './firebase';
 import { signOut } from 'firebase/auth';
-import { query, where, getDocs, collection, deleteDoc, doc } from 'firebase/firestore';
+// import { query, where, getDocs, collection, deleteDoc, doc } from 'firebase/firestore';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import LogoutIcon from '@mui/icons-material/Logout';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -14,6 +14,10 @@ import { useNavigate } from 'react-router-dom';
 import { setFavorites, setBookings } from './BookingSlice';
 import ButtonAppBar from './Navbar';
 import { motion } from 'framer-motion';
+
+
+import { query, where, getDocs, collection, deleteDoc, doc, updateDoc } from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 const Profile = () => {
   const [profilePicture, setProfilePicture] = useState(null);
@@ -28,7 +32,7 @@ const Profile = () => {
   useEffect(() => {
     if (user) {
       fetchProfileData(user.uid);
-      loadProfilePicture();
+      loadProfilePicture(user.uid);
     }
   }, [user]);
 
@@ -62,29 +66,48 @@ const Profile = () => {
     }
   };
 
-  const loadProfilePicture = () => {
-    const savedImage = localStorage.getItem('profilePicture');
-    if (savedImage) {
-      setProfilePicture(savedImage);
+  const loadProfilePicture = async (uid) => {
+    try {
+      const imageRef = ref(storage, `profilePictures/${uid}`);
+      const url = await getDownloadURL(imageRef);
+      setProfilePicture(url);
+    } catch (error) {
+      console.error('Error loading profile picture:', error);
     }
   };
 
-  const handleUploadProfilePicture = (e) => {
+  const handleUploadProfilePicture = async (e) => {
     const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64String = reader.result;
-        localStorage.setItem('profilePicture', base64String);
-        setProfilePicture(base64String);
-      };
-      reader.readAsDataURL(file);
+    if (file && user) {
+      try {
+        const imageRef = ref(storage, `profilePictures/${user.uid}`);
+        await uploadBytes(imageRef, file);
+        const url = await getDownloadURL(imageRef);
+        setProfilePicture(url);
+
+        // Update user document with profile picture URL
+        const userDocRef = doc(db, 'users', user.uid);
+        await updateDoc(userDocRef, { profilePicture: url });
+      } catch (error) {
+        console.error('Error uploading profile picture:', error);
+      }
     }
   };
 
-  const handleRemoveProfilePicture = () => {
-    localStorage.removeItem('profilePicture');
-    setProfilePicture(null);
+  const handleRemoveProfilePicture = async () => {
+    if (user) {
+      try {
+        const imageRef = ref(storage, `profilePictures/${user.uid}`);
+        await deleteObject(imageRef);
+        setProfilePicture(null);
+
+        // Update user document to remove profile picture URL
+        const userDocRef = doc(db, 'users', user.uid);
+        await updateDoc(userDocRef, { profilePicture: null });
+      } catch (error) {
+        console.error('Error removing profile picture:', error);
+      }
+    }
   };
 
   const handleFavoriteRemove = async (roomId) => {
@@ -111,45 +134,47 @@ const Profile = () => {
   };
 
   return (
-    <Container maxWidth="md" sx={{ bgcolor: '#f3f4f6', py: 2 }}>
-      <ButtonAppBar />
-      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-        <motion.div animate={{ scale: [1, 1.05, 1] }} transition={{ duration: 0.5 }}>
-          <Avatar
-            src={profilePicture}
-            alt="Profile Picture"
-            sx={{ width: 180, height: 180, border: '5px solid #d4af37', boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.1)' }}
+    <div>
+       <ButtonAppBar />
+    <Container sx={{ bgcolor: '#f3f4f6', py: 2 }}>
+     
+    <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+          <motion.div animate={{ scale: [1, 1.05, 1] }} transition={{ duration: 0.5 }}>
+            <Avatar
+              src={profilePicture}
+              alt="Profile Picture"
+              sx={{ width: 180, height: 180, border: '5px solid #d4af37', boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.1)' }}
+            />
+          </motion.div>
+        </Box>
+
+        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+          <input
+            accept="image/*"
+            style={{ display: 'none' }}
+            id="profile-picture-upload"
+            type="file"
+            onChange={handleUploadProfilePicture}
           />
-        </motion.div>
-      </Box>
-
-      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
-        <input
-          accept="image/*"
-          style={{ display: 'none' }}
-          id="profile-picture-upload"
-          type="file"
-          onChange={handleUploadProfilePicture}
-        />
-        <label htmlFor="profile-picture-upload">
-          <Button variant="contained" color="secondary" component="span" sx={{ mr: 2 }}>
-            Upload Profile Picture
+          <label htmlFor="profile-picture-upload">
+            <Button variant="contained" color="secondary" component="span" sx={{ mr: 2 }}>
+              Upload Profile Picture
+            </Button>
+          </label>
+          <Button
+            variant="contained"
+            color="error"
+            startIcon={<DeleteIcon />}
+            onClick={handleRemoveProfilePicture}
+            disabled={!profilePicture}
+          >
+            Remove Picture
           </Button>
-        </label>
-        <Button
-          variant="contained"
-          color="error"
-          startIcon={<DeleteIcon />}
-          onClick={handleRemoveProfilePicture}
-          disabled={!profilePicture}
-        >
-          Remove Picture
-        </Button>
-      </Box>
+        </Box>
 
-      <Typography variant="h6" align="center" gutterBottom sx={{ mt: 2, fontWeight: 600 }}>
-        {user?.email}
-      </Typography>
+        <Typography variant="h6" align="center" gutterBottom sx={{ mt: 2, fontWeight: 600 }}>
+          {user?.email}
+        </Typography>
 
       <Typography variant="h5" align="left" sx={{ mt: 4, color: 'black', fontWeight: 600 }}>
         Favorites
@@ -187,6 +212,7 @@ const Profile = () => {
                   <Typography>Check-in: {new Date(booking.checkInDate).toLocaleDateString()}</Typography>
                   <Typography>Check-out: {new Date(booking.checkOutDate).toLocaleDateString()}</Typography>
                   <Typography>Guests: {booking.guests}</Typography>
+                  <Typography>Status: {booking.status}</Typography>
                 </CardContent>
               </Card>
             </motion.div>
@@ -227,6 +253,7 @@ const Profile = () => {
         </Button>
       </Box>
     </Container>
+    </div>
   );
 };
 
