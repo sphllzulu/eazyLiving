@@ -19,7 +19,7 @@ const CarouselImage = styled('img')(({ fadeIn }) => ({
 
 const CarouselText = styled(Typography)(({ fadeIn, fontSize }) => ({
   position: 'absolute',
-  top: '30%',
+  top: '20%',
   left: '50%',
   transform: 'translate(-50%, -50%)',
   color: '#fff',
