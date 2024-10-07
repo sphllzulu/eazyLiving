@@ -54,7 +54,7 @@ const Gallery = () => {
                 height="200"
                 image={image.url}
                 alt={image.name}
-                sx={{ cursor: 'pointer', border: '3px solid purple' }}
+                sx={{ cursor: 'pointer', border: '2px solid purple' }}
                 onClick={() => handleImageClick(image)}
               />
             </Card>
