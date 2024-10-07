@@ -54,32 +54,30 @@ const BookingComponent = () => {
   const elements = useElements();
   const [userRatings, setUserRatings] = useState(0);
   const [showFields, setShowFields] = useState(false);
+  const [allRooms, setAllRooms] = useState([]);
+
   useEffect(() => {
-
-
-    
-
     const fetchRoomsFromFirestore = async () => {
       try {
         const roomsCollection = collection(db, 'accommodation');
         const roomSnapshot = await getDocs(roomsCollection);
         const roomList = roomSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
         
+        setAllRooms(roomList);  // Set all rooms
         setFilteredRooms(roomList);
         dispatch(setBookings(roomList));
       } catch (error) {
         console.error("Error fetching rooms from Firestore: ", error);
       }
     };
-
+  
     fetchRoomsFromFirestore();
   }, [dispatch]);
-   
+  
+  
+  // useEffect to fetch user's ratings from firestore
   useEffect(() => {
-    // ... (keep existing useEffect logic)
-
-    // Fetch user's ratings for rooms
-    const fetchUserRatings = async () => {
+   const fetchUserRatings = async () => {
       if (user) {
         const userRatingsDoc = await getDoc(doc(db, 'rating', user.uid));
         if (userRatingsDoc.exists()) {
@@ -90,6 +88,9 @@ const BookingComponent = () => {
 
     fetchUserRatings();
   }, [user]);
+
+
+
   // for the ratings
   const handleRating = async (roomId, newRating) => {
     if (!user) {
@@ -164,22 +165,26 @@ const BookingComponent = () => {
   
 
 // function to handle the search input
-  const handleSearch = (e) => {
-    const keyword = e.target.value.toLowerCase();
-    setSearchKeyword(keyword);
   
-    const filtered = filteredRooms.filter(room => {
-      // Ensure room.type and room.description are strings before calling toLowerCase
+const handleSearch = (e) => {
+  const keyword = e.target.value.toLowerCase();
+  setSearchKeyword(keyword);
+
+  if (keyword === '') {
+    // If search bar is empty, show all rooms
+    setFilteredRooms(allRooms);
+  } else {
+    // Filter rooms based on keyword
+    const filtered = allRooms.filter(room => {
       const type = room.type ? room.type.toLowerCase() : '';
       const description = room.description ? room.description.toLowerCase() : '';
-  
+
       return type.includes(keyword) || description.includes(keyword);
     });
-  
+
     setFilteredRooms(filtered);
-  };
-  
-  
+  }
+};
   
 
   const handleOpen = (room) => {
