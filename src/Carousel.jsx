@@ -3,6 +3,7 @@ import { Box, Typography, Button, useTheme } from '@mui/material';
 import { styled } from '@mui/system';
 import { ChevronRight } from 'lucide-react';
 import {Link} from 'react-router-dom'
+import { useNavigate } from 'react-router-dom';
 
 const Container = styled(Box)(({ theme }) => ({
   position: 'relative',
@@ -109,6 +110,7 @@ const Carousel = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [fadeIn, setFadeIn] = useState(true);
   const theme = useTheme();
+  const navigate = useNavigate();
 
   const nextImage = () => {
     setFadeIn(false);
@@ -124,9 +126,9 @@ const Carousel = () => {
   }, []);
 
   const handleGalleryClick = () => {
-    // Add your logic to navigate to the gallery section
-    console.log("Navigating to gallery");
+    navigate('/gallery'); 
   };
+
 
   const currentItem = carouselItems[currentIndex];
 
@@ -142,15 +144,15 @@ const Carousel = () => {
         <CarouselText variant="h2" fadeIn={fadeIn}>
           {currentItem.text}
         </CarouselText>
-        <Link to='/gallery'>
+        
         <GalleryButton
           variant="contained"
-          
+          onClick={handleGalleryClick} 
           endIcon={<ChevronRight size={theme.breakpoints.down('sm') ? 14 : 16} />}
         >
           Explore Gallery
         </GalleryButton>
-        </Link>
+        
       </ContentWrapper>
     </Container>
   );
