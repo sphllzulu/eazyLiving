@@ -23,8 +23,8 @@ const SignUp = () => {
   const navigate = useNavigate();
 
   const handleSignUp = async () => {
-    setLoading(true); // Start loading when sign-up begins
-    setError(null); // Reset error state
+    setLoading(true); 
+    setError(null);
 
     try {
       const resultAction = await dispatch(registerUser({ displayName, email, password }));
@@ -38,7 +38,7 @@ const SignUp = () => {
     } catch (err) {
       setError(err.message || "Failed to sign up");
     } finally {
-      setLoading(false); // Stop loading when sign-up ends
+      setLoading(false); 
     }
   };
 
@@ -46,8 +46,8 @@ const SignUp = () => {
     <Container
       maxWidth={false}
       sx={{
-        height: "100vh", // Full viewport height
-        width: "100vw",  // Full viewport width
+        height: "100vh", 
+        width: "100vw",  
         display: "flex",
         justifyContent: "center",
         alignItems: "center",

@@ -13,7 +13,7 @@ import {
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { loginUser } from "./userSlice";
-import GoogleIcon from "@mui/icons-material/Google";
+
 import CloseIcon from "@mui/icons-material/Close";
 
 const SignIn = () => {
