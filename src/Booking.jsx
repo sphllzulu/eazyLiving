@@ -370,7 +370,7 @@ const handleBooking = async () => {
     handleClose();
 
     // Send confirmation email using Nodemailer (via server endpoint)
-    const serverUrl = 'http://localhost:3000'; 
+    const serverUrl = import.meta.env.VITE_API_URL; 
     await axios.post(`${serverUrl}/api/send-confirmation-email`, {
       to: guestInfo.email,
       subject: `Reservation Confirmation for ${selectedRoom.type} Room`,
