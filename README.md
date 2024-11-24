@@ -2,6 +2,8 @@
 
 **EezyLiving** is a modern hotel booking application where users can explore, book, and manage accommodations. Built using ReactJS, Firebase Authentication, Firebase Firestore, and Redux, it offers both guest and admin functionalities, including booking management, payment processing, and accommodation listings.
 
+Click link to view and use the app: **https://eezyliving.onrender.com**
+
 ## Table of Contents
 
 - [Features](#features)
