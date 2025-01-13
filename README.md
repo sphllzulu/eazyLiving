@@ -19,6 +19,10 @@ Click link to view and use the app: **https://eezyliving.onrender.com**
 
 ---
 
+## Screenshot
+![hotel](https://github.com/user-attachments/assets/034ec7d2-a1c3-4b00-9f13-b2fe986ef561)
+
+
 ## Features
 
 ### User Features
